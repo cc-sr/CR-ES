@@ -1,0 +1,25 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+
+# Local experiments and temporary runs
+trial/
+trial_runs/
+tmp/
+temp/
+Archive/
+
+# Generated computation outputs
+kernel_data/
+kernel_SHAP_results/
+Shapley_value_results/
+programs/**/results/
+programs/**/output/
+programs/**/logs/
+programs/hpc_diagnostics/data/
+programs/hpc_diagnostics/random_S_set/
+*.out
+*.err
+
+# Office lock files
+~$*
