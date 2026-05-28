@@ -1,131 +1,125 @@
 # Shapley Value-Based Carbon Emission Responsibility Allocation in Power Systems with Energy Storage
 
-This repository provides the data and computation programs for the manuscript
-above. The code implements a multi-period carbon responsibility allocation
-workflow for power systems with energy storage, including unit commitment,
-storage scheduling, DC OPF-based coalition evaluation, exact Shapley
-calculation for the small benchmark case, KernelSHAP approximation, and
-diagnostic high-renewable/high-storage experiments.
+This repository contains the data and computation code for reproducing the numerical results of the paper.
 
-## Repository Structure
+## 1. Paper Title
 
-```text
-data/
-  input_profiles/
-  results/
-    main_cases/
-    diagnostic_cases/
+**Shapley Value-Based Carbon Emission Responsibility Allocation in Power Systems with Energy Storage**
 
-programs/
-  main_workflow/
-  hpc_diagnostics/
+## 2. Code Purpose
 
-requirements.txt
-LICENSE
-README.md
-```
+The code implements a carbon emission responsibility allocation workflow for power systems with energy storage.
 
-## Python Version
+Main functions:
 
-The repository was prepared with Python 3.12.3. Python 3.10 or newer is
-recommended.
+- build IEEE 14-bus and IEEE 30-bus study cases;
+- run unit commitment, energy storage scheduling, and DC OPF calculations;
+- evaluate coalition-based carbon emissions;
+- compute exact Shapley values for the small benchmark case;
+- approximate Shapley values with KernelSHAP for larger cases;
+- collect numerical outputs used for the paper's figures and tables.
 
-## Dependency Installation
+## 3. Repository Structure
 
-Create and activate a virtual environment, then install the Python packages:
+| Path | Content |
+|---|---|
+| `data/input_profiles/` | Processed load and renewable profile inputs for the IEEE 14-bus and IEEE 30-bus cases |
+| `data/results/main_cases/` | Main-case Shapley and KernelSHAP result workbooks |
+| `data/results/diagnostic_cases/` | Diagnostic storage and renewable sensitivity workbooks, metadata, and prepared case files |
+| `programs/main_workflow/` | Local simulation, OPF, Shapley, KernelSHAP, and result-collection scripts |
+| `programs/hpc_diagnostics/` | HPC diagnostic KernelSHAP workflow and SLURM scripts |
+| `requirements.txt` | Required Python package list, with optional Gurobi note |
+| `LICENSE` | MIT License |
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+## 4. Python Version
 
-The optimization scripts use CVXPY with MOSEK, and some diagnostic scripts can
-use Gurobi before falling back to MOSEK. A valid MOSEK license is required for
-the main workflow. If Gurobi is used, a valid Gurobi license is also required.
+The repository was prepared with **Python 3.12.3**.
 
-## Running the Main Experiments
+Recommended version: **Python 3.10 or newer**.
 
-The main workflow scripts are in `programs/main_workflow/`.
+## 5. Dependency Installation
 
-Generate exact Shapley scripts for the IEEE 14-bus benchmark:
+Install the Python packages from `requirements.txt`.
 
-```bash
-cd programs/main_workflow
-python gen_Shapley_value_t_multi.py
-```
+Suggested setup:
 
-This creates per-period scripts under `make_Shapley/`. Run those generated
-scripts to compute the exact Shapley benchmark workbook.
+1. Create a virtual environment: `python -m venv .venv`
+2. Activate it on macOS/Linux: `source .venv/bin/activate`
+3. Install dependencies: `pip install -r requirements.txt`
 
-Generate KernelSHAP scripts for the main IEEE case workflow:
+The optimization scripts use CVXPY with MOSEK. A valid MOSEK license is required to rerun the main optimization workflow.
 
-```bash
-cd programs/main_workflow
-python gen_kernel_data_t_multi_RG.py
-```
+Gurobi is optional. Some diagnostic scripts can try Gurobi first and then fall back to MOSEK. If you want to use the Gurobi path, install `gurobipy` separately and make sure a valid Gurobi license is available.
 
-This creates per-period scripts under `make_kernel_RG/`. Run the generated
-scripts to compute period-wise KernelSHAP outputs, then collect them into an
-Excel workbook:
+## 6. Running the Main Experiments
 
-```bash
-python results_excel.py
-```
+Run the main workflow from `programs/main_workflow/`.
 
-The high-renewable/high-storage diagnostic workflow is in
-`programs/hpc_diagnostics/`. See
-`programs/hpc_diagnostics/hpc_kernelshap_quickstart.md` for SLURM-based
-preparation, per-period KernelSHAP jobs, and result collection.
+| Task | Command | Output |
+|---|---|---|
+| Prepare exact Shapley benchmark scripts | `python gen_Shapley_value_t_multi.py` | Per-period scripts in `make_Shapley/` |
+| Run exact Shapley benchmark | Run the generated scripts in `make_Shapley/` | Exact Shapley workbook |
+| Prepare KernelSHAP scripts | `python gen_kernel_data_t_multi_RG.py` | Per-period scripts in `make_kernel_RG/` |
+| Run KernelSHAP calculations | Run the generated scripts in `make_kernel_RG/` | Period-wise KernelSHAP `.npy` outputs |
+| Collect KernelSHAP results | `python results_excel.py` | KernelSHAP Excel workbook |
 
-## Reproducing Figures and Tables
+For high-renewable/high-storage diagnostic experiments, use `programs/hpc_diagnostics/`. The SLURM workflow is documented in `programs/hpc_diagnostics/hpc_kernelshap_quickstart.md`.
 
-The repository includes the numerical workbooks used to reproduce the paper's
-tables and figure data:
+## 7. Reproducing Figures and Tables
 
-- `data/results/main_cases/shapley_ieee14_exact_results.xlsx`
-- `data/results/main_cases/kernelshap_ieee14_24h_scene3.xlsx`
-- `data/results/main_cases/kernelshap_ieee30_168h_scene3.xlsx`
-- `data/results/diagnostic_cases/kernelSHAP_*.xlsx`
-- `data/results/diagnostic_cases/*sensitivity*.xlsx`
-- `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx`
+The plotting scripts and final figure PDFs are not included. Figures and tables can be reproduced from the uploaded Excel workbooks.
 
-Important sheets include `SHAP_t`, `SHAP_t_origin`, `SHAP_all`,
-`SHAP_total`, `SHAP_total_origin`, `ESS_decomposition`,
-`efficiency_check`, `dispatch_summary`, `summary`, `hourly_profile`, and
-`SOC`, depending on the workbook.
+| Result file | Use |
+|---|---|
+| `data/results/main_cases/shapley_ieee14_exact_results.xlsx` | Exact Shapley benchmark and KernelSHAP comparison |
+| `data/results/main_cases/kernelshap_ieee14_24h_scene3.xlsx` | IEEE 14-bus main KernelSHAP case |
+| `data/results/main_cases/kernelshap_ieee30_168h_scene3.xlsx` | IEEE 30-bus seven-day KernelSHAP case |
+| `data/results/diagnostic_cases/kernelSHAP_*.xlsx` | Diagnostic KernelSHAP storage and renewable sensitivity cases |
+| `data/results/diagnostic_cases/*sensitivity*.xlsx` | Aggregated sensitivity summaries |
+| `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Participant-level intensity summaries |
 
-Plotting scripts and final figure PDFs are not included in this repository.
-Figures and tables can be reproduced by reading the uploaded Excel workbooks
-and using the sheet names above.
+Common workbook sheets:
 
-## Data Sources
+- `SHAP_t`: hourly allocation results;
+- `SHAP_t_origin`: hourly allocation before merging storage charging/discharging roles;
+- `SHAP_all`: KernelSHAP estimates across sample checkpoints;
+- `SHAP_total`: time-aggregated allocation after role merging;
+- `SHAP_total_origin`: time-aggregated allocation before role merging;
+- `ESS_decomposition`: storage charging responsibility, discharging credit, and net allocation;
+- `efficiency_check`: allocation sum versus full-coalition emissions;
+- `dispatch_summary`: operation summary for diagnostic cases;
+- `summary`, `hourly_profile`, `SOC`: sensitivity and storage-operation summaries.
 
-- Network, participant, generator, storage, and branch parameters for the IEEE
-  14-bus and IEEE 30-bus studies are encoded in the case-construction scripts
-  under `programs/main_workflow/`.
-- Processed load and renewable profile inputs are provided in
-  `data/input_profiles/ieee14_profile_data.xlsx` and
-  `data/input_profiles/ieee30_profile_data.xlsx`.
-- Diagnostic case settings and sampling parameters are documented in
-  `data/results/diagnostic_cases/metadata_*.json`.
-- Result workbooks in `data/results/` are the processed outputs used for the
-  manuscript's numerical analysis.
+## 8. Data Sources
 
-## Data Not Uploaded
+| Data type | Location or source |
+|---|---|
+| Network and participant parameters | Encoded in the case-construction scripts under `programs/main_workflow/` |
+| IEEE 14-bus and IEEE 30-bus load/renewable profiles | Processed files in `data/input_profiles/` |
+| Diagnostic case settings | `data/results/diagnostic_cases/metadata_*.json` |
+| Main numerical outputs | `data/results/main_cases/` |
+| Diagnostic numerical outputs | `data/results/diagnostic_cases/` |
 
-The raw external time-series sources used to prepare the processed load and
-renewable profiles are not included because redistribution rights may be
-restricted. Large generated intermediate files are also not uploaded, including
-per-period KernelSHAP `.npy` outputs, sampled-coalition folders, solver logs,
-temporary run directories, and trial outputs.
+The uploaded profile workbooks are processed inputs used by the case-study scripts.
 
-## Contact
+## 9. Data Not Uploaded
+
+The following files are not included in this repository:
+
+- raw external time-series sources used to prepare the processed load and renewable profiles, because redistribution rights may be restricted;
+- large per-period KernelSHAP `.npy` intermediate outputs;
+- sampled-coalition folders generated during KernelSHAP runs;
+- solver logs and temporary HPC output files;
+- local trial folders and temporary run outputs;
+- plotting scripts and final generated figure PDFs.
+
+## 10. Contact
 
 For questions about the code or data, please contact:
 
-- Siru Chen: `chensiru@sjtu.edu.cn`
+**Siru Chen**  
+`chensiru@sjtu.edu.cn`
 
-## License
+## 11. License
 
 This repository is released under the MIT License. See `LICENSE` for details.
