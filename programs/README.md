@@ -14,6 +14,9 @@ Local computation workflow for the main cases. It includes scripts for:
 Core script names are preserved where they are used as Python imports by other
 scripts.
 
+The IEEE 30-bus main data-preparation path is fixed to the retained manuscript
+scene 3.
+
 ## hpc_diagnostics
 
 HPC workflow for diagnostic KernelSHAP cases. It includes case preparation,

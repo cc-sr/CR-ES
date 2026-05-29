@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 
 def uc(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer, RG_P, RG_cap,
-       RG_ramp, D_P, branch_max, PTDF, A_TG, A_RG, A_D):
+       RG_ramp, D_P, branch_max, PTDF, A_TG, A_RG, A_D,
+       TG_start_cost=None, TG_stop_cost=None, initial_u=None):
     """
     带储能的机组组合优化，加入启停时间和其他约束，基于MOSEK求解。
     """
@@ -25,16 +26,36 @@ def uc(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer, R
     z = cp.Variable((T, len(TG_maxG)), boolean=True)  # 停机变量
 
     PD = D_P - LS
+    if TG_start_cost is None:
+        TG_start_cost = np.zeros(len(TG_maxG))
+    if TG_stop_cost is None:
+        TG_stop_cost = np.zeros(len(TG_maxG))
+    TG_start_cost = np.asarray(TG_start_cost, dtype=float)
+    TG_stop_cost = np.asarray(TG_stop_cost, dtype=float)
 
     TG_cost = cp.sum(cp.multiply(np.reshape(TG_offer, (1, len(TG_offer))), PG - APG)) + AG * cp.sum(APG)
+    if T > 1:
+        TG_commit_cost = (
+            cp.sum(cp.multiply(np.reshape(TG_start_cost, (1, len(TG_start_cost))), y[1:, :])) +
+            cp.sum(cp.multiply(np.reshape(TG_stop_cost, (1, len(TG_stop_cost))), z[1:, :]))
+        )
+    else:
+        TG_commit_cost = 0
     # 可再生能源成本
     RG_cost = cp.sum(cp.multiply(cp.reshape(RG_offer, (1, len(RG_offer))), RG))
 
     # 目标函数
-    obj = TG_cost + RG_cost + AC * cp.sum(LS)
+    obj = TG_cost + TG_commit_cost + RG_cost + AC * cp.sum(LS)
 
     # 约束条件
     cons = []
+    if initial_u is not None:
+        initial_u = np.asarray(initial_u, dtype=float)
+        cons += [
+            y[0, :] - z[0, :] == u[0, :] - initial_u,
+            y[0, :] <= 1 - initial_u,
+            z[0, :] <= initial_u,
+        ]
 
     for t in range(T):
         # 负荷功率约束
@@ -159,4 +180,3 @@ def uc(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer, R
         pd.DataFrame(result["LS"]).to_excel(writer, sheet_name="LS (弃负荷)", index=False)
 
     return result
-

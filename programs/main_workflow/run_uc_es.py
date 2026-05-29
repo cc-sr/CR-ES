@@ -19,7 +19,8 @@ import pandas as pd
 # from run_es import optimize_ess_schedule
 
 def uc_es(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer, RG_P, RG_cap,
-          RG_ramp, D_P, branch_max, PTDF, A_TG, A_RG, A_D, A_ES, ES_ramp, ES_P, eff, penalty_charge_matrix, bid_discharge_matrix):
+          RG_ramp, D_P, branch_max, PTDF, A_TG, A_RG, A_D, A_ES, ES_ramp, ES_P, eff, penalty_charge_matrix, bid_discharge_matrix,
+          TG_start_cost=None, TG_stop_cost=None, initial_u=None):
     """
     带储能的机组组合优化，加入启停时间和其他约束，基于MOSEK求解。
     """
@@ -38,17 +39,37 @@ def uc_es(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer
     z = cp.Variable((T, len(TG_maxG)), boolean=True)  # 停机变量
 
     PD = D_P - LS
+    if TG_start_cost is None:
+        TG_start_cost = np.zeros(len(TG_maxG))
+    if TG_stop_cost is None:
+        TG_stop_cost = np.zeros(len(TG_maxG))
+    TG_start_cost = np.asarray(TG_start_cost, dtype=float)
+    TG_stop_cost = np.asarray(TG_stop_cost, dtype=float)
 
     TG_cost = cp.sum(cp.multiply(np.reshape(TG_offer, (1, len(TG_offer))), PG - APG)) + AG * cp.sum(APG)
+    if T > 1:
+        TG_commit_cost = (
+            cp.sum(cp.multiply(np.reshape(TG_start_cost, (1, len(TG_start_cost))), y[1:, :])) +
+            cp.sum(cp.multiply(np.reshape(TG_stop_cost, (1, len(TG_stop_cost))), z[1:, :]))
+        )
+    else:
+        TG_commit_cost = 0
     RG_cost = cp.sum(cp.multiply(np.reshape(RG_offer, (1, len(RG_offer))), RG))
     p_charge = cp.Variable((T, len(ES_P)))
     p_discharge = cp.Variable((T, len(ES_P)))
     ES_charge_penalty = -cp.sum(cp.multiply(penalty_charge_matrix, p_charge))
     ES_discharge_cost = cp.sum(cp.multiply(bid_discharge_matrix, p_discharge))
     PD_penalty = AC * cp.sum(LS)
-    obj = TG_cost + RG_cost + ES_discharge_cost + PD_penalty + ES_charge_penalty
+    obj = TG_cost + TG_commit_cost + RG_cost + ES_discharge_cost + PD_penalty + ES_charge_penalty
 
     cons = []
+    if initial_u is not None:
+        initial_u = np.asarray(initial_u, dtype=float)
+        cons += [
+            y[0, :] - z[0, :] == u[0, :] - initial_u,
+            y[0, :] <= 1 - initial_u,
+            z[0, :] <= initial_u,
+        ]
 
     for t in range(T):
         cons += [0 <= PD[t, :]]

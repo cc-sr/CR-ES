@@ -10,7 +10,10 @@ import random
 import numpy as np
 import pandas as pd
 
-def ieee30_uc_opf_es_dict(sceneid):
+def ieee30_uc_opf_es_dict(sceneid=3):
+    if int(sceneid) != 3:
+        raise ValueError("The revised IEEE 30-bus manuscript case keeps only scene 3.")
+    sceneid = 3
     # 时间粒度参数
     day = 7
     granu = 24
@@ -29,6 +32,8 @@ def ieee30_uc_opf_es_dict(sceneid):
     TG_maxG = [80, 80, 50, 55] # 265 coal-coal-coal-gas
     TG_minG = [28, 28, 18, 14] # coal-35% gas-25%
     TG_ramp = [48, 48, 30, 330] # coal-60%(1%/min) gas-600%(10%/min)
+    TG_start_cost = [64000, 64000, 40000, 8250]
+    TG_stop_cost = [12800, 12800, 8000, 1650]
     T_on = [4, 4, 2, 1]
     T_off = [6, 6, 4, 1]
     RG_bl = [23, 13]
@@ -136,11 +141,15 @@ def ieee30_uc_opf_es_dict(sceneid):
             self.TG_maxG = np.array(TG_maxG)
             self.TG_minG = np.array(TG_minG)
             self.TG_ramp = np.array(TG_ramp)
+            self.TG_start_cost = np.array(TG_start_cost)
+            self.TG_stop_cost = np.array(TG_stop_cost)
             self.T_on = np.array(T_on)
             self.T_off = np.array(T_off)
             self.RG_bl = np.array(RG_bl).astype(int)
             self.RG_offer = np.array(RG_offer)
-            self.RG_P = np.array(RG_P) * sceneid * 0.2/0.6  # 170/0.6=283
+            # The old multi-scene sweep used RG_P * sceneid * 0.2 / 0.6.
+            # The retained manuscript case is scene 3, whose multiplier is 1.0.
+            self.RG_P = np.array(RG_P)
             self.RG_ramp = np.array(RG_ramp) /0.6
             # self.RG_P = np.array(RG_P)  # 170
             # self.RG_ramp = np.array(RG_ramp)

@@ -2,9 +2,17 @@ import os
 import pickle
 import sys
 import time
+import warnings
 
 import cvxpy as cp
 import numpy as np
+
+warnings.filterwarnings(
+    "ignore",
+    message=r"Argument .* Incorrect array format causing data to be copied",
+    category=UserWarning,
+    module=r"mosek(\.|$)",
+)
 
 _WORKER_CONTEXT = None
 

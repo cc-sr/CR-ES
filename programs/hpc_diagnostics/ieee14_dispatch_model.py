@@ -20,6 +20,12 @@ from make_PTDF_es import PTDF  # noqa: E402
 COAL_CAPACITY_MW = 300.0
 
 
+def thermal_commit_costs(tg_max, tg_carbon):
+    per_mw = np.where(np.asarray(tg_carbon, dtype=float) < 0.7, 150.0, 800.0)
+    start_cost = per_mw * np.asarray(tg_max, dtype=float)
+    return start_cost, 0.2 * start_cost
+
+
 def solve_problem(problem):
     gurobi_options = {
         "Threads": int(os.getenv("GUROBI_THREADS", "2")),
@@ -156,6 +162,7 @@ def build_params(
             raise ValueError("renewable_capacity_mw must match the renewable generator count.")
         case["RG_P"] = renewable_capacity_mw
         case["RG_ramp"] = renewable_capacity_mw.copy()
+    tg_start_cost, tg_stop_cost = thermal_commit_costs(case["TG_maxG"], case["TG_carbon"])
 
     ptdf_data = PTDF(case)
     return {
@@ -165,6 +172,8 @@ def build_params(
         "TG_maxG": case["TG_maxG"].astype(float),
         "TG_minG": case["TG_minG"].astype(float),
         "TG_ramp": case["TG_ramp"].astype(float),
+        "TG_start_cost": tg_start_cost,
+        "TG_stop_cost": tg_stop_cost,
         "T_on": case["T_on"].astype(int),
         "T_off": case["T_off"].astype(int),
         "RG_offer": case["RG_offer"].astype(float),
@@ -189,7 +198,6 @@ def build_params(
         "renewable_curtailment_penalty": float(renewable_curtailment_penalty),
         "thermal_curtailment_penalty": float(thermal_curtailment_penalty),
         "use_apg_slack": True,
-        "use_initial_window_constraints": True,
         "renewable_available_energy": float(np.sum(case["RG_cap"] * case["RG_P"])),
     }
 
@@ -233,6 +241,8 @@ def solve_uc_endogenous_storage(params, degradation_cost=5.0, cap_storage_discha
     tg_max = params["TG_maxG"]
     tg_min = params["TG_minG"]
     tg_ramp = params["TG_ramp"]
+    tg_start_cost = params.get("TG_start_cost", np.zeros_like(tg_max)).astype(float)
+    tg_stop_cost = params.get("TG_stop_cost", np.zeros_like(tg_max)).astype(float)
     t_on = params["T_on"]
     t_off = params["T_off"]
     rg_offer = params["RG_offer"]
@@ -280,6 +290,8 @@ def solve_uc_endogenous_storage(params, degradation_cost=5.0, cap_storage_discha
         + rc * cp.sum(renewable_available - rg)
         + ac * cp.sum(ls)
         + degradation_cost * cp.sum(p_charge + p_discharge)
+        + cp.sum(cp.multiply(tg_start_cost.reshape(1, n_tg), y))
+        + cp.sum(cp.multiply(tg_stop_cost.reshape(1, n_tg), z))
     )
 
     cons = [soc[0, :] == 0.5 * es_p, soc[t_count, :] == 0.5 * es_p]
@@ -292,13 +304,6 @@ def solve_uc_endogenous_storage(params, degradation_cost=5.0, cap_storage_discha
             z[0, :] <= initial_u,
         ]
 
-    if params.get("use_initial_window_constraints", True):
-        for g in range(n_tg):
-            for t0 in range(min(int(t_on[g]) - 1, t_count)):
-                cons += [cp.sum(y[: t0 + 1, g]) <= u[t0, g]]
-            for t0 in range(min(int(t_off[g]) - 1, t_count)):
-                cons += [cp.sum(z[: t0 + 1, g]) <= 1 - u[t0, g]]
-
     for t in range(t_count):
         cons += [0 <= pd_served[t, :], pd_served[t, :] <= d_p[t, :]]
         cons += [cp.multiply(u[t, :], tg_min) <= pg[t, :]]
@@ -306,14 +311,16 @@ def solve_uc_endogenous_storage(params, degradation_cost=5.0, cap_storage_discha
         cons += [0 <= apg[t, :], apg[t, :] <= pg[t, :], apg[t, :] <= tg_min]
 
         for g in range(n_tg):
-            if t >= t_on[g]:
-                cons += [cp.sum(u[t - int(t_on[g]) + 1 : t + 1, g]) >= t_on[g] * z[t, g]]
-            if t >= t_off[g]:
-                cons += [cp.sum(1 - u[t - int(t_off[g]) + 1 : t + 1, g]) >= t_off[g] * y[t, g]]
-            if t < t_count - t_on[g]:
-                cons += [cp.sum(u[t + 1 : t + 1 + int(t_on[g]), g]) >= t_on[g] * y[t, g]]
-            if t < t_count - t_off[g]:
-                cons += [cp.sum(1 - u[t + 1 : t + 1 + int(t_off[g]), g]) >= t_off[g] * z[t, g]]
+            t_on_g = int(t_on[g])
+            t_off_g = int(t_off[g])
+            if t + 1 >= t_on_g:
+                cons += [cp.sum(y[t - t_on_g + 1 : t + 1, g]) <= u[t, g]]
+            else:
+                cons += [cp.sum(y[: t + 1, g]) <= u[t, g]]
+            if t + 1 >= t_off_g:
+                cons += [cp.sum(z[t - t_off_g + 1 : t + 1, g]) <= 1 - u[t, g]]
+            else:
+                cons += [cp.sum(z[: t + 1, g]) <= 1 - u[t, g]]
 
         if t > 0:
             cons += [y[t, :] - z[t, :] == u[t, :] - u[t - 1, :]]

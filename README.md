@@ -55,6 +55,9 @@ Gurobi is optional. Some diagnostic scripts can try Gurobi first and then fall b
 
 Run the main workflow from `programs/main_workflow/`.
 
+The retained IEEE 30-bus manuscript workflow uses scene 3. The main data
+preparation helpers default to this scene and reject other scene IDs.
+
 | Task | Command | Output |
 |---|---|---|
 | Prepare exact Shapley benchmark scripts | `python gen_Shapley_value_t_multi.py` | Per-period scripts in `make_Shapley/` |

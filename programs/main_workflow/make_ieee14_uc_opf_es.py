@@ -29,6 +29,8 @@ def ieee14_uc_opf_es_dict(sceneid):
     TG_maxG = [332, 140, 100] # 572 coal-coal-gas
     TG_minG = [120, 50, 25] # coal-35% gas-25%
     TG_ramp = [200, 84, 600] # coal-60% gas-600%
+    TG_start_cost = [265600, 112000, 15000]
+    TG_stop_cost = [53120, 22400, 3000]
     T_on = [6, 4, 1]
     T_off = [8, 6, 1]
     RG_bl = [6, 8]
@@ -113,6 +115,8 @@ def ieee14_uc_opf_es_dict(sceneid):
             self.TG_maxG = np.array(TG_maxG)
             self.TG_minG = np.array(TG_minG)
             self.TG_ramp = np.array(TG_ramp)
+            self.TG_start_cost = np.array(TG_start_cost)
+            self.TG_stop_cost = np.array(TG_stop_cost)
             self.T_on = np.array(T_on)
             self.T_off = np.array(T_off)
             self.RG_bl = np.array(RG_bl).astype(int)
