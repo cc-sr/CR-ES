@@ -25,7 +25,7 @@ Main functions:
 |---|---|
 | `data/input_profiles/` | Processed load and renewable profile inputs for the IEEE 14-bus and IEEE 30-bus cases |
 | `data/results/main_cases/` | Main-case Shapley and KernelSHAP result workbooks |
-| `data/results/diagnostic_cases/` | Diagnostic storage and renewable sensitivity workbooks, metadata, and prepared case files |
+| `data/results/diagnostic_cases/` | Diagnostic KernelSHAP workbooks, metadata, prepared case files, and participant summary workbook |
 | `programs/main_workflow/` | Local simulation, OPF, Shapley, KernelSHAP, and result-collection scripts |
 | `programs/hpc_diagnostics/` | HPC diagnostic KernelSHAP workflow and SLURM scripts |
 | `requirements.txt` | Required Python package list, with optional Gurobi note |
@@ -74,9 +74,9 @@ The plotting scripts and final figure PDFs are not included. Figures and tables 
 | `data/results/main_cases/shapley_ieee14_exact_results.xlsx` | Exact Shapley benchmark and KernelSHAP comparison |
 | `data/results/main_cases/kernelshap_ieee14_24h_scene3.xlsx` | IEEE 14-bus main KernelSHAP case |
 | `data/results/main_cases/kernelshap_ieee30_168h_scene3.xlsx` | IEEE 30-bus seven-day KernelSHAP case |
-| `data/results/diagnostic_cases/kernelSHAP_*.xlsx` | Diagnostic KernelSHAP storage and renewable sensitivity cases |
-| `data/results/diagnostic_cases/*sensitivity*.xlsx` | Aggregated sensitivity summaries |
-| `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Participant-level intensity summaries |
+| `data/results/diagnostic_cases/kernelSHAP_*.xlsx` | Retained diagnostic KernelSHAP storage and renewable cases |
+| `data/results/diagnostic_cases/prepared_ieee14_required_case_summary.xlsx` | Prepared diagnostic case summary |
+| `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Group- and participant-level intensity summaries |
 
 Common workbook sheets:
 
@@ -88,7 +88,7 @@ Common workbook sheets:
 - `ESS_decomposition`: storage charging responsibility, discharging credit, and net allocation;
 - `efficiency_check`: allocation sum versus full-coalition emissions;
 - `dispatch_summary`: operation summary for diagnostic cases;
-- `summary`, `hourly_profile`, `SOC`: sensitivity and storage-operation summaries.
+- `group_intensity`, `participant_intensity`: retained diagnostic intensity summaries.
 
 ## 8. Data Sources
 

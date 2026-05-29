@@ -17,6 +17,7 @@ Main-case result workbooks:
 
 ## results/diagnostic_cases
 
-Diagnostic workbooks and prepared case files for storage sensitivity and
-renewable capacity sensitivity analyses. The `metadata_*.json` files describe
-case settings and sampling parameters for the corresponding KernelSHAP runs.
+Retained diagnostic KernelSHAP workbooks, one prepared-case summary workbook,
+one participant intensity summary workbook, and prepared case files. The
+`metadata_*.json` files describe case settings and sampling parameters for the
+corresponding KernelSHAP runs.

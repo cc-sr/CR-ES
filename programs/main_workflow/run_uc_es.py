@@ -61,18 +61,16 @@ def uc_es(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer
         cons += [APG[t, :] <= TG_minG]
 
         for i in range(len(TG_maxG)):
-            if t >= T_on[i]:
-                cons += [cp.sum(u[t - int(T_on[i]) + 1 : t + 1, i]) >= T_on[i] * z[t, i]]
-            if t >= T_off[i]:
-                cons += [cp.sum(1 - u[t - int(T_off[i]) + 1 : t + 1, i]) >= T_off[i] * y[t, i]]
-            if t < T_on[i]:
+            T_on_i = int(T_on[i])
+            T_off_i = int(T_off[i])
+            if t + 1 >= T_on_i:
+                cons += [cp.sum(y[t - T_on_i + 1 : t + 1, i]) <= u[t, i]]
+            else:
                 cons += [cp.sum(y[:t + 1, i]) <= u[t, i]]
-            if t < T_off[i]:
+            if t + 1 >= T_off_i:
+                cons += [cp.sum(z[t - T_off_i + 1 : t + 1, i]) <= 1 - u[t, i]]
+            else:
                 cons += [cp.sum(z[:t + 1, i]) <= 1 - u[t, i]]
-            if t < T - T_on[i]:
-                cons += [cp.sum(u[t + 1 : t + 1 + int(T_on[i]), i]) >= T_on[i] * y[t, i]]
-            if t < T - T_off[i]:
-                cons += [cp.sum(1 - u[t + 1 : t + 1 + int(T_off[i]), i]) >= T_off[i] * z[t, i]]
 
         if t > 0:
             cons += [y[t, :] - z[t, :] == u[t, :] - u[t - 1, :]]
