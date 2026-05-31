@@ -8,12 +8,12 @@ Profile inputs used by the IEEE 14-bus and IEEE 30-bus case studies.
 
 Main-case result workbooks:
 
-- `shapley_ieee14_exact_results.xlsx`: price-taking exact Shapley benchmark
-  for the IEEE 14-bus case.
-- `kernelshap_ieee14_24h_scene3.xlsx`: corresponding 24-hour KernelSHAP result
-  for the IEEE 14-bus case.
-- `kernelshap_ieee30_168h_scene3.xlsx`: 168-hour KernelSHAP result for the IEEE
-  30-bus case.
+- `exact_shapley_ieee14_price_taking_base_24h.xlsx`: price-taking exact
+  Shapley benchmark for the IEEE 14-bus case.
+- `kernelshap_ieee14_price_taking_base_24h.xlsx`: corresponding 24-hour
+  KernelSHAP result for the IEEE 14-bus case.
+- `kernelshap_ieee30_manuscript_168h.xlsx`: 168-hour KernelSHAP result for
+  the IEEE 30-bus manuscript case.
 
 ## results/diagnostic_cases
 

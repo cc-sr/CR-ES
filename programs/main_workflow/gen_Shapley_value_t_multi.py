@@ -11,8 +11,8 @@ sys.path.append(base_dir)
 import pandas as pd
 import make_data
 
-def write_t_script(senaid, t):
-    script_path = os.path.join(base_dir, 'make_Shapley', f'Shapley_value_{senaid}_t_{t}.py')
+def write_t_script(senaid, t, case_label="main"):
+    script_path = os.path.join(base_dir, 'make_Shapley', f'shapley_value_{case_label}_t_{t}.py')
     os.makedirs(os.path.dirname(script_path), exist_ok=True)
     with open(script_path, 'w') as f:
         f.write(f"""import warnings
@@ -108,7 +108,8 @@ def shapley_value_parallel(n, value_function, u_t, TG_carbon, TG_offer, TG_maxG,
     return shapley_values
 
 if __name__ == "__main__":
-    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{senaid}.pkl')
+    MAIN_CASE_ID = {senaid}
+    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{{MAIN_CASE_ID}}.pkl')
     output_dir = os.path.join(base_dir, 'Shapley_value_results')
     os.makedirs(output_dir, exist_ok=True)
     
@@ -138,7 +139,7 @@ if __name__ == "__main__":
 
     n = TG_num + RG_num + D_num
 
-    senaid = {senaid}
+    senaid = MAIN_CASE_ID
     t = {t}
     u_t = u [t, :]
     D_P_t = D_P[t, :]
@@ -169,7 +170,7 @@ if __name__ == "__main__":
 
     wb.save(excel_path)
     
-    print(f"=== Shapley_value_{{senaid}}_t_{{t}} 处理完成 ===")
+    print(f"=== shapley_value_{case_label}_t_{{t}} 处理完成 ===")
     if carbon_total == carbon_origin:
         print(f"Carbon emission obligation allocation for t={t}:\\n{{carbon_sharing}}\\n, Total carbon emission:{{carbon_total}}")
     else:
@@ -178,31 +179,28 @@ if __name__ == "__main__":
 
 
 if __name__ == '__main__':
-    sena_num = 4
-    for senaid in range(sena_num - 1, sena_num):
-        make_data.data(senaid)
-        pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{senaid}.pkl')
-        with open(pkl_file_path, 'rb') as f:
-            case_example = pickle.load(f)
-        T = int(case_example['T'])
-        TG_num = int(case_example['TG_num'])
-        RG_num = int(case_example['RG_num'])
-        D_num = int(case_example['D_num'])
+    MAIN_CASE_ID = 3
+    make_data.data(MAIN_CASE_ID)
+    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{MAIN_CASE_ID}.pkl')
+    with open(pkl_file_path, 'rb') as f:
+        case_example = pickle.load(f)
+    T = int(case_example['T'])
+    TG_num = int(case_example['TG_num'])
+    RG_num = int(case_example['RG_num'])
+    D_num = int(case_example['D_num'])
 
-        n = TG_num + RG_num + D_num
+    n = TG_num + RG_num + D_num
 
-        # Excel 文件初始化
-        output_dir = os.path.join(os.path.dirname(__file__), 'Shapley_value_results')
-        os.makedirs(output_dir, exist_ok=True)
-        excel_path = os.path.join(output_dir, "Shapley_value_results.xlsx")
-        df_init = pd.DataFrame(columns=["t"] + [f"agent_{i}" for i in range(n)] + ["carbon_total", "carbon_origin"])
-        df_init.to_excel(excel_path, index=False)
+    # Excel 文件初始化
+    output_dir = os.path.join(os.path.dirname(__file__), 'Shapley_value_results')
+    os.makedirs(output_dir, exist_ok=True)
+    excel_path = os.path.join(output_dir, "Shapley_value_results.xlsx")
+    df_init = pd.DataFrame(columns=["t"] + [f"agent_{i}" for i in range(n)] + ["carbon_total", "carbon_origin"])
+    df_init.to_excel(excel_path, index=False)
 
-        # 生成多个.py文件，每个文件对应一个时段t的计算
-        generated_dir = os.path.join(os.path.dirname(__file__), 'make_Shapley')
-        os.makedirs(generated_dir, exist_ok=True)
-        for t in range(T):
-            write_t_script(senaid, t)
-        print(f"=== 所有 Shapley_value_{senaid}_t 脚本已生成 ===")
-
-
+    # 生成多个.py文件，每个文件对应一个时段t的计算
+    generated_dir = os.path.join(os.path.dirname(__file__), 'make_Shapley')
+    os.makedirs(generated_dir, exist_ok=True)
+    for t in range(T):
+        write_t_script(MAIN_CASE_ID, t, case_label="main")
+    print("=== 所有 shapley_value_main_t 脚本已生成 ===")

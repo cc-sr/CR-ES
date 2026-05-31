@@ -91,10 +91,11 @@ def shapley_value_parallel(n, value_function, u_t, TG_carbon, TG_offer, TG_maxG,
     return shapley_values
 
 if __name__ == "__main__":
-    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_3.pkl')
+    MAIN_CASE_ID = 3
+    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{MAIN_CASE_ID}.pkl')
     output_dir = os.path.join(base_dir, 'Shapley_value_results')
     os.makedirs(output_dir, exist_ok=True)
-    
+
     PTDF_result = PTDF(pkl_file_path)
 
     PTDF = PTDF_result['PTDF']
@@ -121,7 +122,7 @@ if __name__ == "__main__":
 
     n = TG_num + RG_num + D_num
 
-    senaid = 3
+    senaid = MAIN_CASE_ID
     t = 0
     u_t = u [t, :]
     D_P_t = D_P[t, :]
@@ -151,10 +152,9 @@ if __name__ == "__main__":
         ws.cell(row=t + 2, column=col).value = val
 
     wb.save(excel_path)
-    
-    print(f"=== Shapley_value_{senaid}_t_{t} 处理完成 ===")
+
+    print(f"=== shapley_value_main_t_{t} 处理完成 ===")
     if carbon_total == carbon_origin:
         print(f"Carbon emission obligation allocation for t=0:\n{carbon_sharing}\n, Total carbon emission:{carbon_total}")
     else:
         print(f"Carbon emission obligation allocation for t=0:\n{carbon_sharing}\n, Total carbon emission:{carbon_total}. Origin carbon emission:{carbon_origin}")
-    

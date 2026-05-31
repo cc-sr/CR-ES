@@ -55,8 +55,8 @@ Gurobi is optional. Some diagnostic scripts can try Gurobi first and then fall b
 
 Run the main workflow from `programs/main_workflow/`.
 
-The retained IEEE 30-bus manuscript workflow uses scene 3. The main data
-preparation helpers default to this scene and reject other scene IDs.
+The retained IEEE 30-bus manuscript workflow uses the calibrated manuscript
+case. The main data preparation helpers default to this retained case.
 
 | Task | Command | Output |
 |---|---|---|
@@ -82,9 +82,9 @@ The plotting scripts and final figure PDFs are not included. Figures and tables 
 
 | Result file | Use |
 |---|---|
-| `data/results/main_cases/shapley_ieee14_exact_results.xlsx` | IEEE 14-bus price-taking exact Shapley benchmark and KernelSHAP comparison metrics |
-| `data/results/main_cases/kernelshap_ieee14_24h_scene3.xlsx` | Corresponding IEEE 14-bus price-taking KernelSHAP case |
-| `data/results/main_cases/kernelshap_ieee30_168h_scene3.xlsx` | IEEE 30-bus seven-day KernelSHAP case |
+| `data/results/main_cases/exact_shapley_ieee14_price_taking_base_24h.xlsx` | IEEE 14-bus price-taking exact Shapley benchmark and KernelSHAP comparison metrics |
+| `data/results/main_cases/kernelshap_ieee14_price_taking_base_24h.xlsx` | Corresponding IEEE 14-bus price-taking KernelSHAP case |
+| `data/results/main_cases/kernelshap_ieee30_manuscript_168h.xlsx` | IEEE 30-bus seven-day KernelSHAP case |
 | `data/results/diagnostic_cases/kernelSHAP_*.xlsx` | Retained diagnostic KernelSHAP storage and renewable cases |
 | `data/results/diagnostic_cases/prepared_ieee14_required_case_summary.xlsx` | Prepared diagnostic case summary |
 | `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Group- and participant-level intensity summaries |

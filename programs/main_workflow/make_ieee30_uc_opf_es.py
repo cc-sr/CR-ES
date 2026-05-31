@@ -10,10 +10,12 @@ import random
 import numpy as np
 import pandas as pd
 
-def ieee30_uc_opf_es_dict(sceneid=3):
-    if int(sceneid) != 3:
-        raise ValueError("The revised IEEE 30-bus manuscript case keeps only scene 3.")
-    sceneid = 3
+MAIN_CASE_ID = 3
+
+def ieee30_uc_opf_es_dict(sceneid=MAIN_CASE_ID):
+    if int(sceneid) != MAIN_CASE_ID:
+        raise ValueError("This release keeps only the retained IEEE 30-bus manuscript case.")
+    sceneid = MAIN_CASE_ID
     # 时间粒度参数
     day = 7
     granu = 24
@@ -147,8 +149,8 @@ def ieee30_uc_opf_es_dict(sceneid=3):
             self.T_off = np.array(T_off)
             self.RG_bl = np.array(RG_bl).astype(int)
             self.RG_offer = np.array(RG_offer)
-            # The old multi-scene sweep used RG_P * sceneid * 0.2 / 0.6.
-            # The retained manuscript case is scene 3, whose multiplier is 1.0.
+            # The old sensitivity sweep scaled RG_P by an internal case id.
+            # The retained manuscript case uses multiplier 1.0.
             self.RG_P = np.array(RG_P)
             self.RG_ramp = np.array(RG_ramp) /0.6
             # self.RG_P = np.array(RG_P)  # 170

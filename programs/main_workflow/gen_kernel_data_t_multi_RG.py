@@ -10,8 +10,8 @@ import pickle
 
 import make_data
 
-def write_t_script(sceneid, t):
-    script_path = os.path.join(base_dir, 'make_kernel_RG', f'kernel_data_{sceneid}_t_{t}.py')
+def write_t_script(sceneid, t, case_label="main"):
+    script_path = os.path.join(base_dir, 'make_kernel_RG', f'kernel_data_{case_label}_t_{t}.py')
     os.makedirs(os.path.dirname(script_path), exist_ok=True)
     with open(script_path, 'w') as f:
         f.write(f"""import warnings
@@ -76,9 +76,10 @@ def flattened_process_sample(args):
 
 
 if __name__ == "__main__":
+    MAIN_CASE_ID = {sceneid}
     random_sample_dir = os.path.join(base_dir, 'random_S_set')
 
-    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{sceneid}.pkl')
+    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{{MAIN_CASE_ID}}.pkl')
 
     PTDF_result = PTDF(pkl_file_path)
 
@@ -111,7 +112,7 @@ if __name__ == "__main__":
     samples_num = 100
     rand_num = 1
 
-    sceneid = {sceneid}
+    sceneid = MAIN_CASE_ID
     t = {t}
     u_t = u [t, :]
     D_P_t = D_P[t, :]
@@ -162,23 +163,21 @@ if __name__ == "__main__":
     # SHAP
     kernel_SHAP(t, sceneid, fai_all, agents_num, ES_num, kernel_num, rand_num, all_An, all_bn, all_time)
 
-    print(f"=== Kernel_data_{{sceneid}}_t_{{t}} 处理完成 ===")
+    print(f"=== kernel_data_{case_label}_t_{{t}} 处理完成 ===")
 """)
 
 def main():
-    scene_count = 4
-    # for sceneid in range(scene_count):
-    for sceneid in range(scene_count-1, scene_count):
-        make_data.data(sceneid)
+    MAIN_CASE_ID = 3
+    make_data.data(MAIN_CASE_ID)
 
-        pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{sceneid}.pkl')
-        with open(pkl_file_path, 'rb') as f:
-            case_example = pickle.load(f)
-        T = int(case_example['T'])
+    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{MAIN_CASE_ID}.pkl')
+    with open(pkl_file_path, 'rb') as f:
+        case_example = pickle.load(f)
+    T = int(case_example['T'])
 
-        for t in range(T):
-            write_t_script(sceneid, t)
-        print(f"=== 所有 kernel_data_{sceneid}_t 脚本已生成 ===")
+    for t in range(T):
+        write_t_script(MAIN_CASE_ID, t, case_label="main")
+    print("=== 所有 kernel_data_main_t 脚本已生成 ===")
 
 if __name__ == "__main__":
     main()

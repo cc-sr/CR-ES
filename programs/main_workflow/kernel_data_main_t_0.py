@@ -59,9 +59,10 @@ def flattened_process_sample(args):
 
 
 if __name__ == "__main__":
+    MAIN_CASE_ID = 3
     random_sample_dir = os.path.join(base_dir, 'random_S_set')
 
-    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_3.pkl')
+    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{MAIN_CASE_ID}.pkl')
 
     PTDF_result = PTDF(pkl_file_path)
 
@@ -94,7 +95,7 @@ if __name__ == "__main__":
     samples_num = 100
     rand_num = 1
 
-    sceneid = 3
+    sceneid = MAIN_CASE_ID
     t = 0
     u_t = u [t, :]
     D_P_t = D_P[t, :]
@@ -145,4 +146,4 @@ if __name__ == "__main__":
     # SHAP
     kernel_SHAP(t, sceneid, fai_all, agents_num, ES_num, kernel_num, rand_num, all_An, all_bn, all_time)
 
-    print(f"=== Kernel_data_{sceneid}_t_{t} 处理完成 ===")
+    print(f"=== kernel_data_main_t_{t} 处理完成 ===")

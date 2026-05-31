@@ -24,11 +24,12 @@ import opf_lmp_carbon
 from make_randomS import randomS
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
+MAIN_CASE_ID = 3
 
-def data(sceneid=3):
-    if int(sceneid) != 3:
-        raise ValueError("The revised IEEE 30-bus manuscript case keeps only scene 3.")
-    sceneid = 3
+def data(sceneid=MAIN_CASE_ID):
+    if int(sceneid) != MAIN_CASE_ID:
+        raise ValueError("This release keeps only the retained IEEE 30-bus manuscript case.")
+    sceneid = MAIN_CASE_ID
     case_example_es = ieee30_uc_opf_es_dict(sceneid)
 
     # 提取相关参数

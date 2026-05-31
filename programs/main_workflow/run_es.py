@@ -191,7 +191,8 @@ def optimize_ess_schedule(T, prices, sceneid, ES_num, ES_ramp, ES_P, eff, lambda
 if __name__ == "__main__":
     from make_ieee30_uc_opf_es import ieee30_uc_opf_es_dict
     try:
-        sceneid = 3
+        MAIN_CASE_ID = 3
+        sceneid = MAIN_CASE_ID
         case_example = ieee30_uc_opf_es_dict(sceneid)
 
         # 提取相关参数

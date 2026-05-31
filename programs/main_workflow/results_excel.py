@@ -3,17 +3,24 @@ import sys
 base_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(base_dir)
 
-from datetime import datetime
-
 import pickle
 
 import numpy as np
 import pandas as pd
 
-def write_excel(sceneid, T):
+
+def result_workbook_name(T):
+    if int(T) == 24:
+        return "kernelshap_ieee14_price_taking_base_24h.xlsx"
+    if int(T) == 168:
+        return "kernelshap_ieee30_manuscript_168h.xlsx"
+    return f"kernelshap_main_{int(T)}h.xlsx"
+
+
+def write_excel(case_id, T):
     """
     将每个时段的 SHAP 和 total_time 数据写入 Excel 子表，添加时间戳 t
-    :param sceneid: 场景标识，用于文件命名
+    :param case_id: internal case identifier used to locate intermediate .npy files
     :param T: 时间步数
     :param output_dir: 存储 .npy 文件的目录
     """
@@ -29,10 +36,10 @@ def write_excel(sceneid, T):
     # 遍历所有时段 t
     for t in range(T):
         # 从 .npy 文件中读取数据
-        shap_t = np.load(os.path.join(output_dir, f'shap_{sceneid}_{t}.npy'))
-        shap_origin_t = np.load(os.path.join(output_dir, f'shap_origin_{sceneid}_{t}.npy'))
-        shap_all_t = np.load(os.path.join(output_dir, f'shap_all_{sceneid}_{t}.npy'))
-        total_time_t = np.round(np.load(os.path.join(output_dir, f'total_time_{sceneid}_{t}.npy')), 2)
+        shap_t = np.load(os.path.join(output_dir, f'shap_{case_id}_{t}.npy'))
+        shap_origin_t = np.load(os.path.join(output_dir, f'shap_origin_{case_id}_{t}.npy'))
+        shap_all_t = np.load(os.path.join(output_dir, f'shap_all_{case_id}_{t}.npy'))
+        total_time_t = np.round(np.load(os.path.join(output_dir, f'total_time_{case_id}_{t}.npy')), 2)
 
         # 累加 SHAP_all 数据
         if shap_all_data_sum is None:
@@ -66,8 +73,7 @@ def write_excel(sceneid, T):
     os.makedirs(results_dir, exist_ok=True)
 
     # 输出到 Excel 文件
-    current_date = datetime.now().strftime("%m.%d")  # 获取当前日期的月.日格式
-    result_file = os.path.join(results_dir, f'[{current_date}]kernelSHAP_es_results_{T}_{sceneid}.xlsx')
+    result_file = os.path.join(results_dir, result_workbook_name(T))
     with pd.ExcelWriter(result_file) as writer:
         df_shap.to_excel(writer, sheet_name="SHAP_t", index=False)
         df_shap_origin.to_excel(writer, sheet_name="SHAP_t_origin", index=False)
@@ -76,14 +82,12 @@ def write_excel(sceneid, T):
         df_total_time_all.to_excel(writer, sheet_name="TotalTime_all", index=False)
 
 if __name__ == "__main__":
-    scene_count = 4
-    # for sceneid in range(scene_count):
-    for sceneid in range(scene_count - 1, scene_count):
-        pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{sceneid}.pkl')
-        with open(pkl_file_path, 'rb') as f:
-            case_example = pickle.load(f)
-        T = int(case_example['T'])  # 获取时间步数 T
-        write_excel(sceneid, T)
-        print(f"=== kernel_SHAP_{sceneid} 结果文件已生成 ===")
+    MAIN_CASE_ID = 3
+    pkl_file_path = os.path.join(base_dir, 'data', f'case_example_dict_{MAIN_CASE_ID}.pkl')
+    with open(pkl_file_path, 'rb') as f:
+        case_example = pickle.load(f)
+    T = int(case_example['T'])  # 获取时间步数 T
+    write_excel(MAIN_CASE_ID, T)
+    print(f"=== KernelSHAP workbook generated: {result_workbook_name(T)} ===")
 
     print("=== 所有 kernel_SHAP 结果文件已生成 ===")
