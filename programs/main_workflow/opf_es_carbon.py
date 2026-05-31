@@ -9,7 +9,7 @@ import pandas as pd
 def opf_carbon(u_t, TG_carbon, TG_offer, TG_maxG, TG_minG, RG_offer, RG_P, RG_cap_t,
                D_P_t, branch_max, PTDF, A_TG, A_RG, A_D):
     """进行每小时的 OPF 运算，返回每小时的碳排放和节点边际电价(LMP)"""
-    AC = 1e3  # 弃负荷惩罚系数
+    AC = 5e3  # 弃负荷惩罚系数
     AG = 1e2  # 弃低于最小火电出力的功率
 
     # 定义变量

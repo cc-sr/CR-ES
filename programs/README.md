@@ -19,8 +19,8 @@ scene 3.
 
 ## hpc_diagnostics
 
-HPC workflow for diagnostic KernelSHAP cases. It includes case preparation,
-per-period KernelSHAP jobs, result collection, SLURM scripts, and operational
-workflow notes.
+HPC workflow for diagnostic KernelSHAP cases and the IEEE 14-bus exact Shapley
+benchmark. It includes case preparation, per-period KernelSHAP and exact
+Shapley jobs, result collection, SLURM scripts, and operational workflow notes.
 
 Plotting scripts and generated figure files are intentionally excluded.

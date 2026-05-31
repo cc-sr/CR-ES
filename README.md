@@ -68,14 +68,22 @@ preparation helpers default to this scene and reject other scene IDs.
 
 For high-renewable/high-storage diagnostic experiments, use `programs/hpc_diagnostics/`. The SLURM workflow is documented in `programs/hpc_diagnostics/hpc_kernelshap_quickstart.md`.
 
+For the IEEE 14-bus price-taking exact Shapley benchmark, use `programs/hpc_diagnostics/`:
+
+| Task | Command | Output |
+|---|---|---|
+| Prepare price-taking cases | `python prepare_price_taking_cases.py --cases PT14_BASE_2h` | Case file, metadata, and random samples |
+| Run one exact period | `python run_exact_shapley_period.py --case-tag PT14_BASE_2h --period 0` | Period-level exact Shapley `.npy` files |
+| Collect exact results | `python collect_exact_shapley_results.py --case-tag PT14_BASE_2h` | Exact Shapley Excel workbook |
+
 ## 7. Reproducing Figures and Tables
 
 The plotting scripts and final figure PDFs are not included. Figures and tables can be reproduced from the uploaded Excel workbooks.
 
 | Result file | Use |
 |---|---|
-| `data/results/main_cases/shapley_ieee14_exact_results.xlsx` | Exact Shapley benchmark and KernelSHAP comparison |
-| `data/results/main_cases/kernelshap_ieee14_24h_scene3.xlsx` | IEEE 14-bus main KernelSHAP case |
+| `data/results/main_cases/shapley_ieee14_exact_results.xlsx` | IEEE 14-bus price-taking exact Shapley benchmark and KernelSHAP comparison metrics |
+| `data/results/main_cases/kernelshap_ieee14_24h_scene3.xlsx` | Corresponding IEEE 14-bus price-taking KernelSHAP case |
 | `data/results/main_cases/kernelshap_ieee30_168h_scene3.xlsx` | IEEE 30-bus seven-day KernelSHAP case |
 | `data/results/diagnostic_cases/kernelSHAP_*.xlsx` | Retained diagnostic KernelSHAP storage and renewable cases |
 | `data/results/diagnostic_cases/prepared_ieee14_required_case_summary.xlsx` | Prepared diagnostic case summary |
@@ -88,9 +96,15 @@ Common workbook sheets:
 - `SHAP_all`: KernelSHAP estimates across sample checkpoints;
 - `SHAP_total`: time-aggregated allocation after role merging;
 - `SHAP_total_origin`: time-aggregated allocation before role merging;
+- `Shapley_t`: hourly exact Shapley allocation results;
+- `Shapley_t_origin`: hourly exact Shapley allocation before role merging;
+- `Shapley_total`: time-aggregated exact Shapley allocation after role merging;
+- `Shapley_total_origin`: time-aggregated exact Shapley allocation before role merging;
+- `ExactTime_t`, `ExactTime_all`: exact Shapley runtime summaries;
+- `KernelSHAP_error`: KernelSHAP error metrics against exact Shapley;
 - `ESS_decomposition`: storage charging responsibility, discharging credit, and net allocation;
 - `efficiency_check`: allocation sum versus full-coalition emissions;
-- `dispatch_summary`: operation summary for diagnostic cases;
+- `dispatch_summary`: operation summary for main and diagnostic cases;
 - `group_intensity`, `participant_intensity`: retained diagnostic intensity summaries.
 
 ## 8. Data Sources
@@ -111,6 +125,7 @@ The following files are not included in this repository:
 
 - raw external time-series sources used to prepare the processed load and renewable profiles, because redistribution rights may be restricted;
 - large per-period KernelSHAP `.npy` intermediate outputs;
+- raw per-period exact Shapley `.npy` outputs and optional coalition-value arrays;
 - sampled-coalition folders generated during KernelSHAP runs;
 - solver logs and temporary HPC output files;
 - local trial folders and temporary run outputs;
