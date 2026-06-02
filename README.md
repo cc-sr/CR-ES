@@ -89,7 +89,7 @@ The plotting scripts and final figure PDFs are not included. Figures and tables 
 | `data/results/diagnostic_cases/prepared_ieee14_required_case_summary.xlsx` | Prepared diagnostic case summary |
 | `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Group- and participant-level intensity summaries |
 
-Common workbook sheets:
+Workbook sheets used across the result files include:
 
 - `SHAP_t`: hourly allocation results;
 - `SHAP_t_origin`: hourly allocation before merging storage charging/discharging roles;
