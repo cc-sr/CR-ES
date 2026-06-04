@@ -10,10 +10,11 @@
 #SBATCH --cpus-per-task=4
 
 source /dssg/home/acct-seed/chensiru/.bashrc
-conda activate trialenv
+CONDA_ENV=${CONDA_ENV:-cr-es}
+conda activate ${CONDA_ENV}
 
-export PATH=$(conda info --base)/envs/trialenv/bin:$PATH
-export LD_LIBRARY_PATH=$(conda info --base)/envs/trialenv/lib:$LD_LIBRARY_PATH
+export PATH=$(conda info --base)/envs/${CONDA_ENV}/bin:$PATH
+export LD_LIBRARY_PATH=$(conda info --base)/envs/${CONDA_ENV}/lib:$LD_LIBRARY_PATH
 export MOSEKLM_LICENSE_FILE=/dssg/home/acct-seed/chensiru/mosek.lic
 export MOSEK_NUM_THREADS=1
 
