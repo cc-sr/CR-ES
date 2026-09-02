@@ -24,8 +24,9 @@ def uc_es(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer
     """
     带储能的机组组合优化，加入启停时间和其他约束，基于MOSEK求解。
     """
-    AC = 1e3  # 定义惩罚系数，用于弃负荷
-    AG = 1e2  # 弃低于最小火电出力的功率
+    AC = 5e3  # 定义惩罚系数，用于弃负荷
+    AG = 2e2  # 弃低于最小火电出力的功率
+    AR = 1e2  # 弃新能源功率
 
     # 定义变量
     PG = cp.Variable((T, len(TG_maxG)))  # 煤机机组功率
@@ -54,13 +55,15 @@ def uc_es(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer
         )
     else:
         TG_commit_cost = 0
+    renewable_available = RG_cap * np.reshape(RG_P, (1, len(RG_P)))
     RG_cost = cp.sum(cp.multiply(np.reshape(RG_offer, (1, len(RG_offer))), RG))
+    RG_curtailment_cost = AR * cp.sum(renewable_available - RG)
     p_charge = cp.Variable((T, len(ES_P)))
     p_discharge = cp.Variable((T, len(ES_P)))
     ES_charge_penalty = -cp.sum(cp.multiply(penalty_charge_matrix, p_charge))
     ES_discharge_cost = cp.sum(cp.multiply(bid_discharge_matrix, p_discharge))
     PD_penalty = AC * cp.sum(LS)
-    obj = TG_cost + TG_commit_cost + RG_cost + ES_discharge_cost + PD_penalty + ES_charge_penalty
+    obj = TG_cost + TG_commit_cost + RG_cost + RG_curtailment_cost + ES_discharge_cost + PD_penalty + ES_charge_penalty
 
     cons = []
     if initial_u is not None:
@@ -99,7 +102,7 @@ def uc_es(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer
 
         cons += [0 <= RG[t, :]]
         # RG_cap assumed to be provided in global or as argument
-        cons += [RG[t, :] <= cp.multiply(RG_cap[t, :], RG_P)]
+        cons += [RG[t, :] <= renewable_available[t, :]]
         if t > 0:
             cons += [cp.abs(RG[t, :] - RG[t - 1, :]) <= RG_ramp]
 

@@ -13,8 +13,9 @@ def uc(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer, R
     """
     带储能的机组组合优化，加入启停时间和其他约束，基于MOSEK求解。
     """
-    AC = 1e3  # 定义惩罚系数，用于弃负荷
-    AG = 1e2  # 弃低于最小火电出力的功率
+    AC = 5e3  # 定义惩罚系数，用于弃负荷
+    AG = 2e2  # 弃低于最小火电出力的功率
+    AR = 1e2  # 弃新能源功率
 
     # 定义变量
     PG = cp.Variable((T, len(TG_maxG)))  # 煤机机组功率
@@ -41,11 +42,13 @@ def uc(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer, R
         )
     else:
         TG_commit_cost = 0
+    renewable_available = RG_cap * np.reshape(RG_P, (1, len(RG_P)))
     # 可再生能源成本
     RG_cost = cp.sum(cp.multiply(cp.reshape(RG_offer, (1, len(RG_offer))), RG))
+    RG_curtailment_cost = AR * cp.sum(renewable_available - RG)
 
     # 目标函数
-    obj = TG_cost + TG_commit_cost + RG_cost + AC * cp.sum(LS)
+    obj = TG_cost + TG_commit_cost + RG_cost + RG_curtailment_cost + AC * cp.sum(LS)
 
     # 约束条件
     cons = []
@@ -85,7 +88,7 @@ def uc(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer, R
             cons += [cp.abs(PG[t, i] - PG[t - 1, i]) <= TG_ramp[i] for i in range(len(TG_maxG))]
 
         # 新能源机组功率约束
-        cons += [0 <= RG[t, :], RG[t, :] <= cp.multiply(RG_cap[t, :], RG_P)]
+        cons += [0 <= RG[t, :], RG[t, :] <= renewable_available[t, :]]
 
         # 新能源爬坡速率约束
         if t > 0:

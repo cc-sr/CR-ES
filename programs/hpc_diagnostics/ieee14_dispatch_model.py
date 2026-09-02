@@ -266,9 +266,9 @@ def solve_uc_endogenous_storage(params, degradation_cost=5.0, cap_storage_discha
     n_es = len(es_ramp)
     renewable_available = rg_cap * rg_p.reshape(1, n_rg)
 
-    ac = params.get("load_shed_penalty", 1e3)
-    ag = params.get("thermal_curtailment_penalty", 1e2)
-    rc = params.get("renewable_curtailment_penalty", 0.0)
+    ac = params.get("load_shed_penalty", 5000.0)
+    ag = params.get("thermal_curtailment_penalty", 200.0)
+    rc = params.get("renewable_curtailment_penalty", 100.0)
 
     pg = cp.Variable((t_count, n_tg))
     apg = cp.Variable((t_count, n_tg))
@@ -392,9 +392,9 @@ def solve_lmp_fixed_uc_storage(params, u_fixed, p_charge, p_discharge):
     n_d = d_p.shape[1]
     n_bus = a_tg.shape[0]
 
-    ac = params.get("load_shed_penalty", 1e3)
-    ag = params.get("thermal_curtailment_penalty", 1e2)
-    rc = params.get("renewable_curtailment_penalty", 0.0)
+    ac = params.get("load_shed_penalty", 5000.0)
+    ag = params.get("thermal_curtailment_penalty", 200.0)
+    rc = params.get("renewable_curtailment_penalty", 100.0)
     lmp = np.zeros((t_count, n_bus))
     carbon = np.zeros(t_count)
     pg_out = np.zeros((t_count, n_tg))

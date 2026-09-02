@@ -10,7 +10,8 @@ def opf_carbon(u_t, TG_carbon, TG_offer, TG_maxG, TG_minG, RG_offer, RG_P, RG_ca
                D_P_t, branch_max, PTDF, A_TG, A_RG, A_D):
     """进行每小时的 OPF 运算，返回每小时的碳排放和节点边际电价(LMP)"""
     AC = 5e3  # 弃负荷惩罚系数
-    AG = 1e2  # 弃低于最小火电出力的功率
+    AG = 2e2  # 弃低于最小火电出力的功率
+    AR = 1e2  # 弃新能源功率
 
     # 定义变量
     PG = cp.Variable(len(TG_maxG))  # 传统机组出力
@@ -19,11 +20,12 @@ def opf_carbon(u_t, TG_carbon, TG_offer, TG_maxG, TG_minG, RG_offer, RG_P, RG_ca
     LS = cp.Variable(len(D_P_t))  # 弃负荷
     PD = D_P_t - LS
 
+    renewable_available = RG_cap_t * RG_P
     # 目标函数
     TG_cost = cp.sum(cp.multiply(TG_offer, (PG - APG))) + AG * cp.sum(APG)
     RG_cost = cp.sum(cp.multiply(RG_offer, RG))
 
-    obj = TG_cost + RG_cost + AC * cp.sum(LS)
+    obj = TG_cost + RG_cost + AR * cp.sum(renewable_available - RG) + AC * cp.sum(LS)
 
     # 约束条件
     constraints = [
@@ -35,7 +37,7 @@ def opf_carbon(u_t, TG_carbon, TG_offer, TG_maxG, TG_minG, RG_offer, RG_P, RG_ca
         # 传统机组约束
         TG_minG * u_t <= PG, PG <= TG_maxG * u_t,
         # 可再生能源约束
-        0 <= RG, RG <= RG_cap_t * RG_P,
+        0 <= RG, RG <= renewable_available,
         # 弃负荷约束
         0 <= LS, LS <= D_P_t,
         # 弃功率约束
