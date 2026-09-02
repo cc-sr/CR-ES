@@ -38,6 +38,5 @@ workbooks.
 
 ## Data Availability Note
 
-These files are the processed input profiles used for reproducibility of the
-paper's numerical experiments. Raw external time-series sources are not
-redistributed in this repository because redistribution rights may be restricted.
+This folder provides the processed load and renewable profile datasets actually
+used by the manuscript case studies.

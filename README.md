@@ -117,13 +117,13 @@ Workbook sheets used across the result files include:
 | Main numerical outputs | `data/results/main_cases/` |
 | Diagnostic numerical outputs | `data/results/diagnostic_cases/` |
 
-The uploaded profile workbooks are processed inputs used by the case-study scripts.
+The repository provides the processed load and renewable profile datasets
+actually used by the manuscript case studies in `data/input_profiles/`.
 
 ## 9. Data Not Uploaded
 
 The following files are not included in this repository:
 
-- raw external time-series sources used to prepare the processed load and renewable profiles, because redistribution rights may be restricted;
 - large per-period KernelSHAP `.npy` intermediate outputs;
 - raw per-period exact Shapley `.npy` outputs and optional coalition-value arrays;
 - sampled-coalition folders generated during KernelSHAP runs;
