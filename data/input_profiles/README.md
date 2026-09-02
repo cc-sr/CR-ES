@@ -13,3 +13,5 @@ This folder provides the processed load and renewable profile datasets actually 
 | Columns 9-10 | Renewable availability profiles, read as `RG_cap` |
 
 The case-construction scripts multiply these normalized series by the load base demand (`D_P_base`) or renewable capacity (`RG_P`) parameters.
+
+These files are read by `programs/main_workflow/make_ieee14_uc_opf_es.py` and `programs/main_workflow/make_ieee30_uc_opf_es.py`.

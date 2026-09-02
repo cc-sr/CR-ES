@@ -44,19 +44,22 @@ Gurobi is optional. Some diagnostic scripts can try Gurobi first and then fall b
 
 ## 6. Running the Main Experiments
 
-Run the main workflow from `programs/main_workflow/`.
+Run the local manuscript workflow from `programs/main_workflow/`. The default local manuscript case is `MAIN_CASE_ID = 3`, which is the retained IEEE 30-bus case used for the seven-day KernelSHAP results.
 
-The retained IEEE 30-bus manuscript workflow uses the calibrated manuscript case. The main data preparation helpers default to this retained case.
+Before running the scripts, enter the workflow directory: `cd programs/main_workflow`.
 
 | Task | Command | Output |
 |---|---|---|
-| Prepare exact Shapley benchmark scripts | `python gen_Shapley_value_t_multi.py` | Per-period scripts in `make_Shapley/` |
-| Run exact Shapley benchmark | Run the generated scripts in `make_Shapley/` | Exact Shapley workbook |
+| Build case data and random coalition samples | Called automatically by the generation scripts through `make_data.py` | Case pickle files in `data/` and random samples in `random_S_set/` |
+| Prepare exact Shapley benchmark scripts | `python gen_Shapley_value_t_multi.py` | Per-period scripts in `make_Shapley/` and initial workbook in `Shapley_value_results/` |
+| Run exact Shapley benchmark | Run the generated scripts in `make_Shapley/` | Completed exact Shapley workbook |
 | Prepare KernelSHAP scripts | `python gen_kernel_data_t_multi_RG.py` | Per-period scripts in `make_kernel_RG/` |
 | Run KernelSHAP calculations | Run the generated scripts in `make_kernel_RG/` | Period-wise KernelSHAP `.npy` outputs |
 | Collect KernelSHAP results | `python results_excel.py` | KernelSHAP Excel workbook |
 
-For high-renewable/high-storage diagnostic experiments, use `programs/hpc_diagnostics/`. The SLURM workflow is documented in `programs/hpc_diagnostics/hpc_kernelshap_quickstart.md`.
+Generated local outputs are written under `programs/main_workflow/data/`, `programs/main_workflow/random_S_set/`, `programs/main_workflow/make_Shapley/`, `programs/main_workflow/make_kernel_RG/`, `programs/main_workflow/Shapley_value_results/`, `programs/main_workflow/kernel_data_RG/`, and `programs/main_workflow/kernel_SHAP_results/`. These generated files are not part of the committed repository.
+
+For high-renewable/high-storage diagnostic experiments, use `programs/hpc_diagnostics/`. The SLURM workflow is documented in `programs/hpc_diagnostics/hpc_kernelshap_quickstart.md`, and the retained diagnostic outputs are included under `data/results/diagnostic_cases/`.
 
 For the IEEE 14-bus price-taking exact Shapley benchmark, use `programs/hpc_diagnostics/`:
 
@@ -79,7 +82,7 @@ The plotting scripts and final figure PDFs are not included. Figures and tables 
 | `data/results/diagnostic_cases/prepared_ieee14_required_case_summary.xlsx` | Prepared diagnostic case summary |
 | `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Group- and participant-level intensity summaries |
 
-The Excel workbooks contain the hourly and aggregated allocation results, KernelSHAP error metrics, ESS decomposition, efficiency checks, dispatch summaries, and participant-intensity summaries used by the manuscript tables and figures.
+The Excel workbooks contain the hourly and aggregated allocation results, KernelSHAP error metrics, ESS decomposition, efficiency checks, dispatch summaries, and participant-intensity summaries used by the manuscript tables and figures. The processed load and renewable profiles used to draw the input-profile figure are in `data/input_profiles/`.
 
 ## 8. Data Sources
 
