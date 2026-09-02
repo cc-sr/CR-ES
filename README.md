@@ -8,9 +8,7 @@ This repository contains the data and computation code for reproducing the numer
 
 ## 2. Code Purpose
 
-The code builds the IEEE 14-bus and IEEE 30-bus study cases, runs UC/ESS/OPF
-calculations, evaluates coalition emissions, and computes exact Shapley or
-KernelSHAP carbon-responsibility allocations.
+The code builds the IEEE 14-bus and IEEE 30-bus study cases, runs UC/ESS/OPF calculations, evaluates coalition emissions, and computes exact Shapley or KernelSHAP carbon-responsibility allocations.
 
 ## 3. Repository Structure
 
@@ -48,8 +46,7 @@ Gurobi is optional. Some diagnostic scripts can try Gurobi first and then fall b
 
 Run the main workflow from `programs/main_workflow/`.
 
-The retained IEEE 30-bus manuscript workflow uses the calibrated manuscript
-case. The main data preparation helpers default to this retained case.
+The retained IEEE 30-bus manuscript workflow uses the calibrated manuscript case. The main data preparation helpers default to this retained case.
 
 | Task | Command | Output |
 |---|---|---|
@@ -82,10 +79,7 @@ The plotting scripts and final figure PDFs are not included. Figures and tables 
 | `data/results/diagnostic_cases/prepared_ieee14_required_case_summary.xlsx` | Prepared diagnostic case summary |
 | `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Group- and participant-level intensity summaries |
 
-The Excel workbooks contain the hourly and aggregated allocation results,
-KernelSHAP error metrics, ESS decomposition, efficiency checks, dispatch
-summaries, and participant-intensity summaries used by the manuscript tables and
-figures.
+The Excel workbooks contain the hourly and aggregated allocation results, KernelSHAP error metrics, ESS decomposition, efficiency checks, dispatch summaries, and participant-intensity summaries used by the manuscript tables and figures.
 
 ## 8. Data Sources
 
@@ -97,9 +91,7 @@ figures.
 
 ## 9. Data Not Uploaded
 
-Not uploaded: large intermediate `.npy` arrays, sampled-coalition folders,
-solver/HPC logs, local trial outputs, plotting scripts, and generated figure
-PDFs.
+Not uploaded: large intermediate `.npy` arrays, sampled-coalition folders, solver/HPC logs, local trial outputs, plotting scripts, and generated figure PDFs.
 
 ## 10. Contact
 

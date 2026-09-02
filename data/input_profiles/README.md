@@ -1,7 +1,6 @@
 # Input Profiles
 
-This folder provides the processed load and renewable profile datasets actually
-used by the IEEE 14-bus and IEEE 30-bus manuscript case studies.
+This folder provides the processed load and renewable profile datasets actually used by the IEEE 14-bus and IEEE 30-bus manuscript case studies.
 
 | File | Used by |
 |---|---|
@@ -13,5 +12,4 @@ used by the IEEE 14-bus and IEEE 30-bus manuscript case studies.
 | Columns 1-8 | Normalized load profile candidates |
 | Columns 9-10 | Renewable availability profiles, read as `RG_cap` |
 
-The case-construction scripts multiply these normalized series by the load base
-demand (`D_P_base`) or renewable capacity (`RG_P`) parameters.
+The case-construction scripts multiply these normalized series by the load base demand (`D_P_base`) or renewable capacity (`RG_P`) parameters.
