@@ -8,16 +8,9 @@ This repository contains the data and computation code for reproducing the numer
 
 ## 2. Code Purpose
 
-The code implements a carbon emission responsibility allocation workflow for power systems with energy storage.
-
-Main functions:
-
-- build IEEE 14-bus and IEEE 30-bus study cases;
-- run unit commitment, energy storage scheduling, and DC OPF calculations;
-- evaluate coalition-based carbon emissions;
-- compute exact Shapley values for the small benchmark case;
-- approximate Shapley values with KernelSHAP for larger cases;
-- collect numerical outputs used for the paper's figures and tables.
+The code builds the IEEE 14-bus and IEEE 30-bus study cases, runs UC/ESS/OPF
+calculations, evaluates coalition emissions, and computes exact Shapley or
+KernelSHAP carbon-responsibility allocations.
 
 ## 3. Repository Structure
 
@@ -89,47 +82,24 @@ The plotting scripts and final figure PDFs are not included. Figures and tables 
 | `data/results/diagnostic_cases/prepared_ieee14_required_case_summary.xlsx` | Prepared diagnostic case summary |
 | `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Group- and participant-level intensity summaries |
 
-Workbook sheets used across the result files include:
-
-- `SHAP_t`: hourly allocation results;
-- `SHAP_t_origin`: hourly allocation before merging storage charging/discharging roles;
-- `SHAP_all`: KernelSHAP estimates across sample checkpoints;
-- `SHAP_total`: time-aggregated allocation after role merging;
-- `SHAP_total_origin`: time-aggregated allocation before role merging;
-- `Shapley_t`: hourly exact Shapley allocation results;
-- `Shapley_t_origin`: hourly exact Shapley allocation before role merging;
-- `Shapley_total`: time-aggregated exact Shapley allocation after role merging;
-- `Shapley_total_origin`: time-aggregated exact Shapley allocation before role merging;
-- `ExactTime_t`, `ExactTime_all`: exact Shapley runtime summaries;
-- `KernelSHAP_error`: KernelSHAP error metrics against exact Shapley;
-- `ESS_decomposition`: storage charging responsibility, discharging credit, and net allocation;
-- `efficiency_check`: allocation sum versus full-coalition emissions;
-- `dispatch_summary`: operation summary for main and diagnostic cases;
-- `group_intensity`, `participant_intensity`: retained diagnostic intensity summaries.
+The Excel workbooks contain the hourly and aggregated allocation results,
+KernelSHAP error metrics, ESS decomposition, efficiency checks, dispatch
+summaries, and participant-intensity summaries used by the manuscript tables and
+figures.
 
 ## 8. Data Sources
 
-| Data type | Location or source |
+| Data type | Location |
 |---|---|
 | Network and participant parameters | Encoded in the case-construction scripts under `programs/main_workflow/` |
-| IEEE 14-bus and IEEE 30-bus load/renewable profiles | Processed files in `data/input_profiles/` |
-| Diagnostic case settings | `data/results/diagnostic_cases/metadata_*.json` |
-| Main numerical outputs | `data/results/main_cases/` |
-| Diagnostic numerical outputs | `data/results/diagnostic_cases/` |
-
-The repository provides the processed load and renewable profile datasets
-actually used by the manuscript case studies in `data/input_profiles/`.
+| IEEE 14-bus and IEEE 30-bus load/renewable profiles | Processed datasets in `data/input_profiles/` |
+| Numerical outputs and diagnostic metadata | `data/results/` |
 
 ## 9. Data Not Uploaded
 
-The following files are not included in this repository:
-
-- large per-period KernelSHAP `.npy` intermediate outputs;
-- raw per-period exact Shapley `.npy` outputs and optional coalition-value arrays;
-- sampled-coalition folders generated during KernelSHAP runs;
-- solver logs and temporary HPC output files;
-- local trial folders and temporary run outputs;
-- plotting scripts and final generated figure PDFs.
+Not uploaded: large intermediate `.npy` arrays, sampled-coalition folders,
+solver/HPC logs, local trial outputs, plotting scripts, and generated figure
+PDFs.
 
 ## 10. Contact
 
