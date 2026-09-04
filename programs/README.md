@@ -19,8 +19,16 @@ case.
 
 ## hpc_diagnostics
 
-HPC workflow for diagnostic KernelSHAP cases and the IEEE 14-bus exact Shapley
-benchmark. It includes case preparation, per-period KernelSHAP and exact
-Shapley jobs, result collection, SLURM scripts, and operational workflow notes.
+HPC workflow for IEEE 14-bus diagnostic KernelSHAP cases, the IEEE 14-bus exact Shapley benchmark, the storage-location cases, and the renewable-capacity cases including RE6x. It includes case preparation, per-period KernelSHAP and exact Shapley jobs, result collection, SLURM scripts, and operational workflow notes.
+
+Key follow-up entry points:
+
+- `prepare_ieee14_location_cases_24h.py --case-group location`
+- `prepare_ieee14_location_cases_24h.py --case-group renewable`
+- `slurm_prepare_price_taking_cases.sh`
+
+## ieee118_high_res
+
+IEEE 118-bus high-renewable workflow. It includes the MATPOWER topology file, processed-case builder, UC/ESS dispatch model, period-wise KernelSHAP evaluator, result collector, Excel exporter, and SLURM scripts.
 
 Plotting scripts and generated figure files are intentionally excluded.

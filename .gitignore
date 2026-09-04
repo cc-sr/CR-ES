@@ -16,8 +16,10 @@ Shapley_value_results/
 programs/**/results/
 programs/**/output/
 programs/**/logs/
-programs/hpc_diagnostics/data/
-programs/hpc_diagnostics/random_S_set/
+programs/**/data/
+programs/**/random_S_set/
+programs/**/kernel_data/
+programs/**/kernel_SHAP_results/
 *.out
 *.err
 

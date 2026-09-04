@@ -1,6 +1,6 @@
 # Shapley Value-Based Carbon Emission Responsibility Allocation in Power Systems with Energy Storage
 
-This repository contains the data and computation code for reproducing the numerical results of the paper.
+This repository contains the processed data and computation code for reproducing the numerical results of the paper.
 
 ## 1. Paper Title
 
@@ -8,45 +8,49 @@ This repository contains the data and computation code for reproducing the numer
 
 ## 2. Code Purpose
 
-The code builds the IEEE 14-bus and IEEE 30-bus study cases, runs UC/ESS/OPF calculations, evaluates coalition emissions, and computes exact Shapley or KernelSHAP carbon-responsibility allocations.
+The code builds the IEEE 14-bus, IEEE 30-bus, and IEEE 118-bus study cases, runs UC/ESS/OPF calculations, evaluates coalition emissions, and computes exact Shapley or KernelSHAP carbon-responsibility allocations.
+
+The repository is organized as a reproducibility package. It includes the case-building scripts, simulation and allocation programs, processed load and renewable profiles, and the retained result workbooks used for the manuscript and follow-up reviewer checks.
 
 ## 3. Repository Structure
 
 | Path | Content |
 |---|---|
-| `data/input_profiles/` | Processed load and renewable profile inputs for the IEEE 14-bus and IEEE 30-bus cases |
+| `data/input_profiles/` | Processed load and renewable profile inputs for the IEEE 14-bus, IEEE 30-bus, and IEEE 118-bus cases |
 | `data/results/main_cases/` | Main-case Shapley and KernelSHAP result workbooks |
 | `data/results/diagnostic_cases/` | Diagnostic KernelSHAP workbooks, metadata, prepared case files, and participant summary workbook |
+| `data/results/followup_cases/` | IEEE 14-bus storage-location, IEEE 14-bus RE6x, and IEEE 118-bus high-renewable result workbooks |
 | `programs/main_workflow/` | Local simulation, OPF, Shapley, KernelSHAP, and result-collection scripts |
-| `programs/hpc_diagnostics/` | HPC diagnostic KernelSHAP workflow and SLURM scripts |
+| `programs/hpc_diagnostics/` | IEEE 14-bus diagnostic, storage-location, renewable-capacity, exact Shapley, KernelSHAP, and SLURM scripts |
+| `programs/ieee118_high_res/` | IEEE 118-bus high-renewable case builder, dispatch model, KernelSHAP scripts, and SLURM scripts |
 | `requirements.txt` | Required Python package list, with optional Gurobi note |
 | `LICENSE` | MIT License |
 
 ## 4. Python Version
 
-The repository was prepared with **Python 3.12.3**.
-
-Recommended version: **Python 3.10 or newer**.
+The repository was checked with **Python 3.11.11** on macOS. Python **3.10 or newer** is recommended.
 
 ## 5. Dependency Installation
 
 Install the Python packages from `requirements.txt`.
 
-Suggested setup:
+Basic setup:
 
 1. Create a virtual environment: `python -m venv .venv`
 2. Activate it on macOS/Linux: `source .venv/bin/activate`
 3. Install dependencies: `pip install -r requirements.txt`
 
-The optimization scripts use CVXPY with MOSEK. A valid MOSEK license is required to rerun the main optimization workflow.
+The optimization scripts use CVXPY with MOSEK. A valid MOSEK license is required to rerun the main optimization workflow and the KernelSHAP coalition evaluations.
 
-Gurobi is optional. Some diagnostic scripts can try Gurobi first and then fall back to MOSEK. If you want to use the Gurobi path, install `gurobipy` separately and make sure a valid Gurobi license is available.
+Gurobi is optional. Some UC/diagnostic paths can use Gurobi when `gurobipy` and a valid Gurobi license are available, but the retained workflow does not require it.
 
 ## 6. Running the Main Experiments
 
-Run the local manuscript workflow from `programs/main_workflow/`. The default local manuscript case is `MAIN_CASE_ID = 3`, which is the retained IEEE 30-bus case used for the seven-day KernelSHAP results.
+### IEEE 14-bus and IEEE 30-bus Local Workflow
 
-Before running the scripts, enter the workflow directory: `cd programs/main_workflow`.
+Run the local manuscript workflow from `programs/main_workflow/`. The retained local manuscript path includes the IEEE 14-bus exact Shapley/KernelSHAP benchmark and the IEEE 30-bus seven-day KernelSHAP case.
+
+Enter the workflow directory first: `cd programs/main_workflow`.
 
 | Task | Command | Output |
 |---|---|---|
@@ -57,17 +61,35 @@ Before running the scripts, enter the workflow directory: `cd programs/main_work
 | Run KernelSHAP calculations | Run the generated scripts in `make_kernel_RG/` | Period-wise KernelSHAP `.npy` outputs |
 | Collect KernelSHAP results | `python results_excel.py` | KernelSHAP Excel workbook |
 
-Generated local outputs are written under `programs/main_workflow/data/`, `programs/main_workflow/random_S_set/`, `programs/main_workflow/make_Shapley/`, `programs/main_workflow/make_kernel_RG/`, `programs/main_workflow/Shapley_value_results/`, `programs/main_workflow/kernel_data_RG/`, and `programs/main_workflow/kernel_SHAP_results/`. These generated files are not part of the committed repository.
+Generated local outputs are written under `programs/main_workflow/data/`, `programs/main_workflow/random_S_set/`, `programs/main_workflow/make_Shapley/`, `programs/main_workflow/make_kernel_RG/`, `programs/main_workflow/Shapley_value_results/`, `programs/main_workflow/kernel_data_RG/`, and `programs/main_workflow/kernel_SHAP_results/`. These generated files are ignored by Git.
 
-For high-renewable/high-storage diagnostic experiments, use `programs/hpc_diagnostics/`. The SLURM workflow is documented in `programs/hpc_diagnostics/hpc_kernelshap_quickstart.md`, and the retained diagnostic outputs are included under `data/results/diagnostic_cases/`.
+### IEEE 14-bus Exact Shapley and Follow-up KernelSHAP Cases
 
-For the IEEE 14-bus price-taking exact Shapley benchmark, use `programs/hpc_diagnostics/`:
+Use `programs/hpc_diagnostics/` for the IEEE 14-bus price-taking exact Shapley benchmark, the storage-location cases, and the renewable-capacity cases including RE6x.
 
 | Task | Command | Output |
 |---|---|---|
 | Prepare price-taking cases | `python prepare_price_taking_cases.py --cases PT14_BASE_2h` | Case file, metadata, and random samples |
 | Run one exact period | `python run_exact_shapley_period.py --case-tag PT14_BASE_2h --period 0` | Period-level exact Shapley `.npy` files |
 | Collect exact results | `python collect_exact_shapley_results.py --case-tag PT14_BASE_2h` | Exact Shapley Excel workbook |
+| Prepare storage-location cases | `python prepare_ieee14_location_cases_24h.py --case-group location` | Four 24-hour storage-location case files |
+| Prepare renewable-capacity cases | `python prepare_ieee14_location_cases_24h.py --case-group renewable` | Four 24-hour renewable-capacity case files, including `PT14_RG6x_8h` |
+| Run one KernelSHAP period | `python run_kernel_period.py --case-tag PT14_RG6x_8h --period 0` | One period-level KernelSHAP output |
+| Collect KernelSHAP results | `python collect_kernel_results.py --case-tag PT14_RG6x_8h --expected-periods 24` | Final KernelSHAP workbook |
+
+For HPC runs, use the SLURM scripts in the same directory. The scripts default to `CONDA_ENV=cr-es`; set `HPC_HOME`, `CONDA_ENV`, `MOSEKLM_LICENSE_FILE`, or `PROJECT_DIR` before `sbatch` if your cluster paths differ.
+
+### IEEE 118-bus High-renewable Case
+
+Use `programs/ieee118_high_res/` for the IEEE 118-bus high-renewable case.
+
+| Task | Command | Output |
+|---|---|---|
+| Prepare the 24-hour case | `python prepare_ieee118_price_taking_case.py` | Case settings, dispatch summary, UC/SOC trajectory, metadata, and random samples |
+| Run one KernelSHAP period | `python run_kernel_period.py --period 0` | One period-level KernelSHAP output |
+| Collect KernelSHAP results | `python collect_kernel_results.py --expected-periods 24` | Final KernelSHAP workbook |
+
+For HPC runs, use `slurm_prepare_ieee118.sh`, `slurm_kernel_ieee118_array.sh`, and `slurm_collect_ieee118.sh`.
 
 ## 7. Reproducing Figures and Tables
 
@@ -81,6 +103,9 @@ The plotting scripts and final figure PDFs are not included. Figures and tables 
 | `data/results/diagnostic_cases/kernelSHAP_*.xlsx` | Retained diagnostic KernelSHAP storage and renewable cases |
 | `data/results/diagnostic_cases/prepared_ieee14_required_case_summary.xlsx` | Prepared diagnostic case summary |
 | `data/results/diagnostic_cases/all_participant_intensity_summary.xlsx` | Group- and participant-level intensity summaries |
+| `data/results/followup_cases/kernelshap_ieee14_storage_location_*.xlsx` | IEEE 14-bus storage-location sensitivity results |
+| `data/results/followup_cases/kernelshap_ieee14_renewable_6x_24h.xlsx` | IEEE 14-bus RE6x renewable-capacity result |
+| `data/results/followup_cases/kernelshap_ieee118_high_res_24h.xlsx` | IEEE 118-bus high-renewable result |
 
 The Excel workbooks contain the hourly and aggregated allocation results, KernelSHAP error metrics, ESS decomposition, efficiency checks, dispatch summaries, and participant-intensity summaries used by the manuscript tables and figures. The processed load and renewable profiles used to draw the input-profile figure are in `data/input_profiles/`.
 
@@ -88,8 +113,9 @@ The Excel workbooks contain the hourly and aggregated allocation results, Kernel
 
 | Data type | Location |
 |---|---|
-| Network and participant parameters | Encoded in the case-construction scripts under `programs/main_workflow/` |
-| IEEE 14-bus and IEEE 30-bus load/renewable profiles | Processed datasets in `data/input_profiles/` |
+| IEEE 14-bus and IEEE 30-bus network and participant parameters | Encoded in the case-construction scripts under `programs/main_workflow/` |
+| IEEE 118-bus network topology | `programs/ieee118_high_res/case118.m` |
+| Load and renewable profiles actually used by the paper cases | Processed datasets in `data/input_profiles/` |
 | Numerical outputs and diagnostic metadata | `data/results/` |
 
 ## 9. Data Not Uploaded

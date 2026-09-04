@@ -1,87 +1,75 @@
 # HPC KernelSHAP Quickstart
 
-这份文档只保留最短操作路径。默认你已经把整个 Repo 上传到了 HPC，例如：
+This file keeps only the short HPC operation path for the IEEE 14-bus cases.
 
-```text
-/dssg/home/acct-seed/chensiru/carbon/es/CR-ES
-```
+Default working directory: `programs/hpc_diagnostics`.
 
-HPC 计算目录为：
+Before submitting jobs, enter the directory after uploading the repo:
 
-```text
-programs/hpc_diagnostics
-```
+`cd /path/to/CR-ES/programs/hpc_diagnostics`
 
-## 1. 进入计算目录
+If a different layout is used, set:
 
-```bash
-cd /dssg/home/acct-seed/chensiru/carbon/es/CR-ES/programs/hpc_diagnostics
-```
+`export PROJECT_DIR=$(pwd)`
 
-如需使用其他位置，可以在提交任务前设置：
+The SLURM scripts default to `CONDA_ENV=cr-es`. Set `HPC_HOME`, `CONDA_ENV`, or `MOSEKLM_LICENSE_FILE` before `sbatch` if needed.
 
-```bash
-export PROJECT_DIR=$(pwd)
-```
+## 1. Prepare Case Inputs
 
-## 2. 准备 case 输入
+Legacy storage-size sensitivity:
 
-储能敏感性：
+- `CASE_TAG=ES40_30MW EXPERIMENT=storage DAYS=3 sbatch slurm_prepare_case.sh`
+- `CASE_TAG=ES80_60MW EXPERIMENT=storage DAYS=3 sbatch slurm_prepare_case.sh`
+- `CASE_TAG=ES130_110MW EXPERIMENT=storage DAYS=3 sbatch slurm_prepare_case.sh`
 
-```bash
-CASE_TAG=ES40_30MW EXPERIMENT=storage DAYS=3 sbatch slurm_prepare_case.sh
-CASE_TAG=ES80_60MW EXPERIMENT=storage DAYS=3 sbatch slurm_prepare_case.sh
-CASE_TAG=ES130_110MW EXPERIMENT=storage DAYS=3 sbatch slurm_prepare_case.sh
-```
+Legacy renewable-capacity sensitivity:
 
-新能源敏感性：
+- `CASE_TAG=RGcap0xPeak_ES40_30MW EXPERIMENT=renewable DAYS=1 sbatch slurm_prepare_case.sh`
+- `CASE_TAG=RGcap2xPeak_ES40_30MW EXPERIMENT=renewable DAYS=1 sbatch slurm_prepare_case.sh`
+- `CASE_TAG=RGcap3xPeak_ES40_30MW EXPERIMENT=renewable DAYS=1 sbatch slurm_prepare_case.sh`
 
-```bash
-CASE_TAG=RGcap0xPeak_ES40_30MW EXPERIMENT=renewable DAYS=1 sbatch slurm_prepare_case.sh
-CASE_TAG=RGcap2xPeak_ES40_30MW EXPERIMENT=renewable DAYS=1 sbatch slurm_prepare_case.sh
-CASE_TAG=RGcap3xPeak_ES40_30MW EXPERIMENT=renewable DAYS=1 sbatch slurm_prepare_case.sh
-```
+IEEE 14-bus storage-location sensitivity:
 
-## 3. 提交 KernelSHAP 任务
+- `CASE_GROUP=location sbatch slurm_prepare_price_taking_cases.sh`
 
-储能敏感性是 72 个时段：
+IEEE 14-bus renewable-capacity sensitivity including RE6x:
 
-```bash
-CASE_TAG=ES40_30MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch slurm_kernel_array.sh
-CASE_TAG=ES80_60MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch slurm_kernel_array.sh
-CASE_TAG=ES130_110MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch slurm_kernel_array.sh
-```
+- `CASE_GROUP=renewable sbatch slurm_prepare_price_taking_cases.sh`
+- `CASE_TAGS="PT14_RG6x_8h" sbatch slurm_prepare_price_taking_cases.sh`
 
-新能源敏感性是 24 个时段：
+## 2. Submit KernelSHAP Jobs
 
-```bash
-CASE_TAG=RGcap0xPeak_ES40_30MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh
-CASE_TAG=RGcap2xPeak_ES40_30MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh
-CASE_TAG=RGcap3xPeak_ES40_30MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh
-```
+Storage-size sensitivity has 72 periods:
 
-## 4. 收集结果
+- `CASE_TAG=ES40_30MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch slurm_kernel_array.sh`
+- `CASE_TAG=ES80_60MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch slurm_kernel_array.sh`
+- `CASE_TAG=ES130_110MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch slurm_kernel_array.sh`
 
-```bash
-CASE_TAG=ES40_30MW EXPECTED_PERIODS=72 sbatch slurm_collect_results.sh
-CASE_TAG=ES80_60MW EXPECTED_PERIODS=72 sbatch slurm_collect_results.sh
-CASE_TAG=ES130_110MW EXPECTED_PERIODS=72 sbatch slurm_collect_results.sh
+The renewable-capacity and storage-location cases have 24 periods:
 
-CASE_TAG=RGcap0xPeak_ES40_30MW EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh
-CASE_TAG=RGcap2xPeak_ES40_30MW EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh
-CASE_TAG=RGcap3xPeak_ES40_30MW EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh
-```
+- `CASE_TAG=RGcap0xPeak_ES40_30MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh`
+- `CASE_TAG=RGcap2xPeak_ES40_30MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh`
+- `CASE_TAG=RGcap3xPeak_ES40_30MW KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh`
+- `CASE_TAG=PT14_LOC_45 KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh`
+- `CASE_TAG=PT14_LOC_68 KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh`
+- `CASE_TAG=PT14_LOC_23 KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh`
+- `CASE_TAG=PT14_LOC_1214 KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh`
+- `CASE_TAG=PT14_RG6x_8h KERNEL_NUM=1000 SAMPLES_PER_KERNEL=100 sbatch --array=0-23 slurm_kernel_array.sh`
 
-最终 Excel 默认生成在：
+## 3. Collect Results
 
-```text
-programs/hpc_diagnostics/kernel_SHAP_results/
-```
+- `CASE_TAG=ES40_30MW EXPECTED_PERIODS=72 sbatch slurm_collect_results.sh`
+- `CASE_TAG=ES80_60MW EXPECTED_PERIODS=72 sbatch slurm_collect_results.sh`
+- `CASE_TAG=ES130_110MW EXPECTED_PERIODS=72 sbatch slurm_collect_results.sh`
+- `CASE_TAG=RGcap0xPeak_ES40_30MW EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh`
+- `CASE_TAG=RGcap2xPeak_ES40_30MW EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh`
+- `CASE_TAG=RGcap3xPeak_ES40_30MW EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh`
+- `CASE_TAG=PT14_LOC_45 EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh`
+- `CASE_TAG=PT14_LOC_68 EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh`
+- `CASE_TAG=PT14_LOC_23 EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh`
+- `CASE_TAG=PT14_LOC_1214 EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh`
+- `CASE_TAG=PT14_RG6x_8h EXPECTED_PERIODS=24 sbatch slurm_collect_results.sh`
 
-临时逐时段结果默认生成在：
+Final Excel workbooks are generated in `programs/hpc_diagnostics/kernel_SHAP_results/`. Period-level temporary outputs are generated in `programs/hpc_diagnostics/kernel_data/`.
 
-```text
-programs/hpc_diagnostics/kernel_data/
-```
-
-这些输出目录已写入 `.gitignore`，不会进入 Repo。
+These output directories are ignored by Git.

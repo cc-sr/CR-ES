@@ -24,13 +24,49 @@ from run_uc import uc  # noqa: E402
 from run_uc_es import uc_es  # noqa: E402
 
 
-DEFAULT_CASES = ("PT14_BASE_2h", "PT14_RG0x_8h", "PT14_RG2x_8h", "PT14_RG4x_8h")
+BASE_CASES = ("PT14_BASE_2h",)
+LOCATION_CASES = ("PT14_LOC_45", "PT14_LOC_68", "PT14_LOC_23", "PT14_LOC_1214")
+RENEWABLE_CASES = (
+    "PT14_RG0x_8h",
+    "PT14_RG2x_8h",
+    "PT14_RG4x_8h",
+    "PT14_RG6x_8h",
+)
+DEFAULT_CASES = LOCATION_CASES
 
 CASE_CONFIG = {
     "PT14_BASE_2h": {
         "res_scale": 1.0,
         "duration_h": 2.0,
         "renewable_line_limit": None,
+    },
+    "PT14_LOC_45": {
+        "res_scale": 1.0,
+        "duration_h": 2.0,
+        "renewable_line_limit": None,
+        "ess_buses": (4, 5),
+        "location_note": "Original ESS locations at buses 4 and 5.",
+    },
+    "PT14_LOC_68": {
+        "res_scale": 1.0,
+        "duration_h": 2.0,
+        "renewable_line_limit": None,
+        "ess_buses": (6, 8),
+        "location_note": "ESS co-located with renewable buses 6 and 8.",
+    },
+    "PT14_LOC_23": {
+        "res_scale": 1.0,
+        "duration_h": 2.0,
+        "renewable_line_limit": None,
+        "ess_buses": (2, 3),
+        "location_note": "ESS placed at upstream high-demand buses 2 and 3.",
+    },
+    "PT14_LOC_1214": {
+        "res_scale": 1.0,
+        "duration_h": 2.0,
+        "renewable_line_limit": None,
+        "ess_buses": (12, 14),
+        "location_note": "ESS placed in the remote load pocket at buses 12 and 14.",
     },
     "PT14_RG0x_8h": {
         "res_scale": 0.0,
@@ -44,6 +80,11 @@ CASE_CONFIG = {
     },
     "PT14_RG4x_8h": {
         "res_scale": 4.0,
+        "duration_h": 8.0,
+        "renewable_line_limit": 200.0,
+    },
+    "PT14_RG6x_8h": {
+        "res_scale": 6.0,
         "duration_h": 8.0,
         "renewable_line_limit": 200.0,
     },
@@ -62,6 +103,18 @@ def apply_renewable_line_relaxation(case, limit_mw):
     return case
 
 
+def apply_ess_location(case, ess_buses):
+    if ess_buses is None:
+        return case
+    ess_buses = np.asarray(ess_buses, dtype=int)
+    if len(ess_buses) != int(case["ES_num"]):
+        raise ValueError(f"Expected {case['ES_num']} ESS bus locations, got {len(ess_buses)}.")
+    if np.any(ess_buses < 1) or np.any(ess_buses > int(case["bus_num"])):
+        raise ValueError(f"ESS bus locations must be within 1..{case['bus_num']}: {ess_buses.tolist()}")
+    case["ES_bl"] = ess_buses
+    return case
+
+
 def build_price_taking_case(config, sceneid=3):
     case = ieee14_uc_opf_es_dict(sceneid)
     case = {k: np.asarray(v).copy() if isinstance(v, np.ndarray) else v for k, v in case.items()}
@@ -70,6 +123,7 @@ def build_price_taking_case(config, sceneid=3):
     case["RG_P"] = base_rg_power * float(config["res_scale"])
     case["RG_ramp"] = np.maximum(case["RG_P"].astype(float), 1e-6)
     case["ES_P"] = case["ES_ramp"].astype(float) * float(config["duration_h"])
+    case = apply_ess_location(case, config.get("ess_buses"))
     case = apply_renewable_line_relaxation(case, config.get("renewable_line_limit"))
     return case
 
@@ -143,6 +197,8 @@ def dispatch_summary(case, uc_no_es_result, uc_with_es_result, tag, config):
         "trajectory_model": "price-taking",
         "res_scale": float(config["res_scale"]),
         "duration_h": float(config["duration_h"]),
+        "ES_buses": ",".join(str(int(bus)) for bus in case["ES_bl"]),
+        "location_note": config.get("location_note", ""),
         "T": int(case["T"]),
         "load_energy_MWh": load_energy,
         "load_peak_MW": load_peak,
@@ -179,6 +235,12 @@ def dispatch_summary(case, uc_no_es_result, uc_with_es_result, tag, config):
 def prepare_one(tag, args):
     config = CASE_CONFIG[tag]
     case = build_price_taking_case(config, sceneid=args.sceneid)
+    smoke_hours = getattr(args, "smoke_hours", None)
+    if smoke_hours is not None and int(smoke_hours) < int(case["T"]):
+        smoke_hours = max(1, int(smoke_hours))
+        case["T"] = smoke_hours
+        case["D_P"] = case["D_P"][:smoke_hours]
+        case["RG_cap"] = case["RG_cap"][:smoke_hours]
     ptdf_data = PTDF(case)
     initial_u = np.ones(int(case["TG_num"]))
     start_cost = case.get("TG_start_cost", np.zeros(int(case["TG_num"]))).astype(float)
@@ -296,6 +358,7 @@ def prepare_one(tag, args):
         "random_seed": int(args.seed),
         "sceneid": str(args.sceneid),
         "case_config": config,
+        "ES_buses": split_case["ES_bl"].astype(int).tolist(),
         "uc_note": "Thermal UC uses corrected startup/shutdown logic with initial units online.",
         "storage_split_note": split_case["storage_split_note"],
         "dispatch_summary": summary,
@@ -317,22 +380,42 @@ def prepare_one(tag, args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Prepare IEEE14 price-taking cases.")
-    parser.add_argument("--cases", nargs="+", default=list(DEFAULT_CASES), choices=list(CASE_CONFIG))
+    parser.add_argument(
+        "--case-group", choices=("base", "location", "renewable", "all"), default="location"
+    )
+    parser.add_argument("--cases", nargs="+", default=None, choices=list(CASE_CONFIG))
     parser.add_argument("--sceneid", type=int, default=3)
     parser.add_argument("--kernel-num", type=int, default=1000)
     parser.add_argument("--samples-per-kernel", type=int, default=100)
     parser.add_argument("--seed", type=int, default=1126)
+    parser.add_argument("--smoke-hours", type=int, default=24)
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     os.makedirs(os.path.join(WORKFLOW_DIR, "data"), exist_ok=True)
-    summaries = [prepare_one(tag, args) for tag in args.cases]
+    if args.cases is not None:
+        case_tags = args.cases
+        summary_name = "prepared_ieee14_price_taking_selected_summary"
+    elif args.case_group == "base":
+        case_tags = list(BASE_CASES)
+        summary_name = "prepared_ieee14_price_taking_base_summary"
+    elif args.case_group == "location":
+        case_tags = list(LOCATION_CASES)
+        summary_name = "prepared_ieee14_price_taking_location_summary"
+    elif args.case_group == "renewable":
+        case_tags = list(RENEWABLE_CASES)
+        summary_name = "prepared_ieee14_price_taking_renewable_summary"
+    elif args.case_group == "all":
+        case_tags = list(CASE_CONFIG)
+        summary_name = "prepared_ieee14_price_taking_all_summary"
+
+    summaries = [prepare_one(tag, args) for tag in case_tags]
     summary_df = pd.DataFrame(summaries)
-    output_path = os.path.join(WORKFLOW_DIR, "data", "prepared_ieee14_price_taking_summary.xlsx")
+    output_path = os.path.join(WORKFLOW_DIR, "data", f"{summary_name}.xlsx")
     summary_df.to_excel(output_path, index=False)
-    summary_df.to_csv(os.path.join(WORKFLOW_DIR, "data", "prepared_ieee14_price_taking_summary.csv"), index=False)
+    summary_df.to_csv(os.path.join(WORKFLOW_DIR, "data", f"{summary_name}.csv"), index=False)
     print("Prepared IEEE14 price-taking cases:", output_path)
     print(summary_df.to_string(index=False))
 
