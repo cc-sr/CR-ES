@@ -128,7 +128,7 @@ def uc_es(sceneid, T, TG_offer, TG_maxG, TG_minG, TG_ramp, T_on, T_off, RG_offer
         flow = (
             PTDF @ A_TG @ cp.reshape(PG[t, :] - APG[t, :], (-1, 1)) +
             PTDF @ A_RG @ cp.reshape(RG[t, :], (-1, 1)) +
-            PTDF @ A_D @ (-cp.reshape(D_P[t, :], (-1, 1))) +
+            PTDF @ A_D @ (-cp.reshape(PD[t, :], (-1, 1))) +
             PTDF @ A_ES @ (-cp.reshape(s[t, :], (-1, 1)))
         )
         cons += [flow <= cp.reshape(branch_max, (-1, 1))]
